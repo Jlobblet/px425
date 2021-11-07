@@ -1,10 +1,7 @@
-/*=========================================================/
-/  makePNG header, PX425 assignment 2.                     /
-/                                                          /
-/  Original code created by D.Quigley - November 2012      /
-/=========================================================*/
+/* makePNG header, PX425 assignment 2.
+ *
+ *  Original code created by D.Quigley - November 2012 */
 
+void writePNG(char* filname, double** grid, int width, int height);
 
-/* Function prototypes */
-void writePNG(char *filname, double** grid, int width, int height);
-void bork(char *msg,...);
+void bork(char* msg, ...);
