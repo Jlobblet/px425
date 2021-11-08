@@ -29,8 +29,8 @@ int main() {
     double Lapl, grad;
 
     /* Number of grid points */
-    int Nx = 256;
-    int Ny = 256;
+    const int Nx = 256;
+    const int Ny = 256;
 
     /* Loop counters */
     int ix, iy, istep;
@@ -43,27 +43,27 @@ int main() {
     clock_t t1 = clock();
 
     /* Initialise random number generator */
-    unsigned long seed = 120549784972;
+    const unsigned long seed = 120549784972;
     init_genrand(seed);
 
     /* Set grid spacing */
-    double dx = 1.0;
-    double dy = 1.0;
-    double dx_sq = dx * dx;
-    double dy_sq = dy * dy;
-    double inv_dx = 1.0 / dx;
-    double inv_dy = 1.0 / dy;
-    double inv_dx_sq = 1.0 / dx_sq;
-    double inv_dy_sq = 1.0 / dy_sq;
-    double half_inv_dx = inv_dx * 0.5;
-    double half_inv_dy = inv_dy * 0.5;
+    const double dx = 1.0;
+    const double dy = 1.0;
+    const double dx_sq = dx * dx;
+    const double dy_sq = dy * dy;
+    const double inv_dx = 1.0 / dx;
+    const double inv_dy = 1.0 / dy;
+    const double inv_dx_sq = 1.0 / dx_sq;
+    const double inv_dy_sq = 1.0 / dy_sq;
+    const double half_inv_dx = inv_dx * 0.5;
+    const double half_inv_dy = inv_dy * 0.5;
 
     /* Set timestep and K */
-    double dt = 0.001;
-    double nu = 5.0;
+    const double dt = 0.001;
+    const double nu = 5.0;
 
     /* Number of steps to run */
-    int nstep = 10000;
+    const int nstep = 10000;
 
     /* Allocate memory for a bunch of stuff */
     allocate2d(&u, Nx, Ny);
