@@ -98,31 +98,25 @@ int main() {
 
                 /* Compute d2u/dx2, accounting for special cases near boundaries */
                 if (ix == 0) {
-                    Lapl += -2.0 * u[ix][iy] / dxsq + u[ix + 1][iy] / dxsq +
-                            u[Nx - 1][iy] / dxsq;  /* left */
+                    Lapl += (-2.0 * u[ix][iy] + u[ix + 1][iy] + u[Nx - 1][iy]) / dxsq;  /* left */
                     grad += (u[ix + 1][iy] - u[Nx - 1][iy]) / dx / 2.0;
                 } else if (ix == Nx - 1) {
-                    Lapl += -2.0 * u[ix][iy] / dxsq + u[0][iy] / dxsq +
-                            u[ix - 1][iy] / dxsq;     /* right */
+                    Lapl += (-2.0 * u[ix][iy] + u[0][iy] + u[ix - 1][iy]) / dxsq;     /* right */
                     grad += (u[0][iy] - u[ix - 1][iy]) / dx / 2.0;
                 } else {
-                    Lapl += -2.0 * u[ix][iy] / dxsq + u[ix + 1][iy] / dxsq +
-                            u[ix - 1][iy] / dxsq;
+                    Lapl += (-2.0 * u[ix][iy] + u[ix + 1][iy] + u[ix - 1][iy]) / dxsq;
                     grad += (u[ix + 1][iy] - u[ix - 1][iy]) / dx / 2.0;
                 }
 
                 /* Compute d2u/dy2, accounting for special cases near boundaries */
                 if (iy == 0) {
-                    Lapl += -2.0 * u[ix][iy] / dysq + u[ix][iy + 1] / dysq +
-                            u[ix][Ny - 1] / dysq;  /* bottom */
+                    Lapl += (-2.0 * u[ix][iy] + u[ix][iy + 1] + u[ix][Ny - 1]) / dysq;  /* bottom */
                     grad += (u[ix][iy + 1] - u[ix][Ny - 1]) / dy / 2.0;
                 } else if (iy == Ny - 1) {
-                    Lapl += -2.0 * u[ix][iy] / dysq + u[ix][0] / dysq +
-                            u[ix][iy - 1] / dysq;     /* top */
+                    Lapl += (-2.0 * u[ix][iy] + u[ix][0] + u[ix][iy - 1]) / dysq;     /* top */
                     grad += (u[ix][0] - u[ix][iy - 1]) / dy / 2.0;
                 } else {
-                    Lapl += -2.0 * u[ix][iy] / dysq + u[ix][iy + 1] / dysq +
-                            u[ix][iy - 1] / dysq;
+                    Lapl += (-2.0 * u[ix][iy] + u[ix][iy + 1] + u[ix][iy - 1]) / dysq;
                     grad += (u[ix][iy + 1] - u[ix][iy - 1]) / dy / 2.0;
                 }
 
