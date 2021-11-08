@@ -77,7 +77,9 @@ int main() {
     }
 
     /* Write an image of the initial grid */
+#ifdef NDEBUG
     int stepincr = 10;
+#endif // NDEBUG
     sprintf(filename, "snapshot%08d.png", isnap);
     writePNG(filename, u, Nx, Ny);
     isnap++;
@@ -230,14 +232,14 @@ int main() {
         double** tmp = u_new;
         u_new = u;
         u = tmp;
-
+#ifdef NDEBUG
         /* Snapshots of grid to file */
         if (istep == isnap) {
             sprintf(filename, "snapshot%08d.png", isnap);
             writePNG(filename, u, Nx, Ny);
             isnap *= stepincr;
         }
-
+#endif // NDEBUG
     }
 
     /* END SECTION TO BE OPTIMISED */
