@@ -104,92 +104,125 @@ int main() {
          *
          * C corner
          * E edge
-         * I interior
-         *
-         * The compiler will take care of expressions like 0 + 1 in this bit. */
+         * I interior */
 
         /* Corners */
 
+        double u00 = u[0][0];
+        double u10 = u[1][0];
+        double uE0 = u[Nx - 1][0];
+        double u01 = u[0][1];
+        double u0E = u[0][Ny - 1];
+        double ue0 = u[Nx - 2][0];
+        double uE1 = u[Nx - 1][1];
+        double uEE = u[Nx - 1][Ny - 1];
+        double u1E = u[1][Ny - 1];
+        double u0e = u[0][Ny - 2];
+
         /* Bottom left
          * ix = 0, iy = 0 */
-        Lapl = (-2.0 * u[0][0] + u[0 + 1][0] + u[Nx - 1][0]) * inv_dx_sq /* left */
-               + (-2.0 * u[0][0] + u[0][0 + 1] + u[0][Ny - 1]) * inv_dy_sq; /* bottom*/
-        grad = (u[0 + 1][0] - u[Nx - 1][0]) * half_inv_dx /* left */
-               + (u[0][0 + 1] - u[0][Ny - 1]) * half_inv_dy; /* bottom */
-        u_new[0][0] = u[0][0] - dt * u[0][0] * grad + dt * nu * Lapl;
+        Lapl = (-2.0 * u00 + u10 + uE0) * inv_dx_sq /* left */
+               + (-2.0 * u00 + u01 + u0E) * inv_dy_sq; /* bottom*/
+        grad = (u10 - uE0) * half_inv_dx /* left */
+               + (u01 - u0E) * half_inv_dy; /* bottom */
+        u_new[0][0] = u00 - dt * u00 * grad + dt * nu * Lapl;
 
         /* Bottom right
          * ix = Nx - 1, iy = 0 */
-        Lapl = (-2.0 * u[Nx - 1][0] + u[0][0] + u[Nx - 1 - 1][0]) * inv_dx_sq /* right */
-               + (-2.0 * u[Nx - 1][0] + u[Nx - 1][0 + 1] + u[Nx - 1][Ny - 1]) * inv_dy_sq;  /* bottom */
-        grad = (u[0][0] - u[Nx - 1 - 1][0]) * half_inv_dx /* right */
-               + (u[Nx - 1][0 + 1] - u[Nx - 1][Ny - 1]) * half_inv_dy; /* bottom */
-        u_new[Nx - 1][0] = u[Nx - 1][0] - dt * u[Nx - 1][0] * grad + dt * nu * Lapl;
+        Lapl = (-2.0 * uE0 + u00 + ue0) * inv_dx_sq /* right */
+               + (-2.0 * uE0 + uE1 + uEE) * inv_dy_sq;  /* bottom */
+        grad = (u00 - ue0) * half_inv_dx /* right */
+               + (uE1 - uEE) * half_inv_dy; /* bottom */
+        u_new[Nx - 1][0] = uE0 - dt * uE0 * grad + dt * nu * Lapl;
 
         /* Top left
          * ix = 0, iy = Ny - 1 */
-        Lapl = (-2.0 * u[0][Ny - 1] + u[0 + 1][Ny - 1] + u[Nx - 1][Ny - 1]) * inv_dx_sq /* left */
-               + (-2.0 * u[0][Ny - 1] + u[0][0] + u[0][Ny - 1 - 1]) * inv_dy_sq; /* top */
-        grad = (u[0 + 1][Ny - 1] - u[Nx - 1][Ny - 1]) * half_inv_dx /* left */
-               + (u[0][0] - u[0][Ny - 1 - 1]) * half_inv_dx; /* top */
-        u_new[0][Ny - 1] = u[0][Ny - 1] - dt * u[0][Ny - 1] * grad + dt * nu * Lapl;
+        Lapl = (-2.0 * u0E + u1E + uEE) * inv_dx_sq /* left */
+               + (-2.0 * u0E + u00 + u0e) * inv_dy_sq; /* top */
+        grad = (u1E - uEE) * half_inv_dx /* left */
+               + (u00 - u0e) * half_inv_dx; /* top */
+        u_new[0][Ny - 1] = u0E - dt * u0E * grad + dt * nu * Lapl;
 
         /* Top right
          * ix = Nx - 1, iy = Ny - 1 */
-        Lapl = (-2.0 * u[Nx - 1][Ny - 1] + u[0][Ny - 1] + u[Nx - 1 - 1][Ny - 1]) * inv_dx_sq /* right */
-               + (-2.0 * u[Nx - 1][Ny - 1] + u[Nx - 1][0] + u[Nx - 1][Ny - 1 - 1]) * inv_dy_sq; /* top */
-        grad = (u[0][Ny - 1] - u[Nx - 1 - 1][Ny - 1]) * half_inv_dx + /* right */
-               +(u[Nx - 1][0] - u[Nx - 1][Ny - 1 - 1]) * half_inv_dx; /* top */
-        u_new[Nx - 1][Ny - 1] = u[Nx - 1][Ny - 1] - dt * u[Nx - 1][Ny - 1] * grad + dt * nu * Lapl;
+        Lapl = (-2.0 * uEE + u0E + u[Nx - 1 - 1][Ny - 1]) * inv_dx_sq /* right */
+               + (-2.0 * uEE + uE0 + u[Nx - 1][Ny - 1 - 1]) * inv_dy_sq; /* top */
+        grad = (u0E - u[Nx - 1 - 1][Ny - 1]) * half_inv_dx + /* right */
+               +(uE0 - u[Nx - 1][Ny - 1 - 1]) * half_inv_dx; /* top */
+        u_new[Nx - 1][Ny - 1] = uEE - dt * uEE * grad + dt * nu * Lapl;
 
         /* Edges */
         /* Left and right
          * ix = 0 and ix = Nx - 1 */
         for (iy = 1; iy < Ny - 1; iy++) {
-            Lapl = (-2.0 * u[0][iy] + u[0 + 1][iy] + u[Nx - 1][iy]) * inv_dx_sq  /* left */
-                   + (-2.0 * u[0][iy] + u[0][iy + 1] + u[0][iy - 1]) * inv_dy_sq;
-            grad = (u[0 + 1][iy] - u[Nx - 1][iy]) * half_inv_dx
-                   + (u[0][iy + 1] - u[0][iy - 1]) * half_inv_dy;
-            u_new[0][iy] = u[0][iy] - dt * u[0][iy] * grad + dt * nu * Lapl;
+            double u0y = u[0][iy];
+            double u1y = u[1][iy];
+            double uEy = u[Nx - 1][iy];
+            double u0yp = u[0][iy + 1];
+            double u0ym = u[0][iy - 1];
+            double uey = u[Nx - 1 - 1][iy];
+            double uEyp = u[Nx - 1][iy + 1];
+            double uEym = u[Nx - 1][iy - 1];
 
-            Lapl = (-2.0 * u[Nx - 1][iy] + u[0][iy] + u[Nx - 1 - 1][iy]) * inv_dx_sq /* right */
-                   + (-2.0 * u[Nx - 1][iy] + u[Nx - 1][iy + 1] + u[Nx - 1][iy - 1]) * inv_dy_sq;
-            grad = (u[0][iy] - u[Nx - 1 - 1][iy]) * half_inv_dx
-                   + (u[Nx - 1][iy + 1] - u[Nx - 1][iy - 1]) * half_inv_dy;
-            u_new[Nx - 1][iy] = u[Nx - 1][iy] - dt * u[Nx - 1][iy] * grad + dt * nu * Lapl;
+            Lapl = (-2.0 * u0y + u1y + uEy) * inv_dx_sq  /* left */
+                   + (-2.0 * u0y + u0yp + u0ym) * inv_dy_sq;
+            grad = (u1y - uEy) * half_inv_dx
+                   + (u0yp - u0ym) * half_inv_dy;
+            u_new[0][iy] = u0y - dt * u0y * grad + dt * nu * Lapl;
+
+            Lapl = (-2.0 * uEy + u0y + uey) * inv_dx_sq /* right */
+                   + (-2.0 * uEy + uEyp + uEym) * inv_dy_sq;
+            grad = (u0y - uey) * half_inv_dx
+                   + (uEyp - uEym) * half_inv_dy;
+            u_new[Nx - 1][iy] = uEy - dt * uEy * grad + dt * nu * Lapl;
         }
         /* Bottom and top
          * iy = 0 and iy = Ny - 1 */
         for (ix = 1; ix < Nx - 1; ix++) {
-            Lapl = (-2.0 * u[ix][0] + u[ix + 1][0] + u[ix - 1][0]) * inv_dx_sq
-                   + (-2.0 * u[ix][0] + u[ix][0 + 1] + u[ix][Ny - 1]) * inv_dy_sq;  /* bottom */
-            grad = (u[ix + 1][0] - u[ix - 1][0]) * half_inv_dx
-                   + (u[ix][0 + 1] - u[ix][Ny - 1]) * half_inv_dy;
-            u_new[ix][0] = u[ix][0] - dt * u[ix][0] * grad + dt * nu * Lapl;
+            double ux0 = u[ix][0];
+            double uxp0 = u[ix + 1][0];
+            double uxm0 = u[ix - 1][0];
+            double ux1 = u[ix][0 + 1];
+            double uxE = u[ix][Ny - 1];
+            double uxpE = u[ix + 1][Ny - 1];
+            double uxmE = u[ix - 1][Ny - 1];
+            double uxe = u[ix][Ny - 1 - 1];
 
-            Lapl = (-2.0 * u[ix][Ny - 1] + u[ix + 1][Ny - 1] + u[ix - 1][Ny - 1]) * inv_dx_sq
-                   + (-2.0 * u[ix][Ny - 1] + u[ix][0] + u[ix][Ny - 1 - 1]) * inv_dy_sq;     /* top */
-            grad = (u[ix + 1][Ny - 1] - u[ix - 1][Ny - 1]) * half_inv_dx
-                   + (u[ix][0] - u[ix][Ny - 1 - 1]) * half_inv_dx;
-            u_new[ix][Ny - 1] = u[ix][Ny - 1] - dt * u[ix][Ny - 1] * grad + dt * nu * Lapl;
+            Lapl = (-2.0 * ux0 + uxp0 + uxm0) * inv_dx_sq
+                   + (-2.0 * ux0 + ux1 + uxE) * inv_dy_sq;  /* bottom */
+            grad = (uxp0 - uxm0) * half_inv_dx
+                   + (ux1 - uxE) * half_inv_dy;
+            u_new[ix][0] = ux0 - dt * ux0 * grad + dt * nu * Lapl;
+
+            Lapl = (-2.0 * uxE + uxpE + uxmE) * inv_dx_sq
+                   + (-2.0 * uxE + ux0 + uxe) * inv_dy_sq;     /* top */
+            grad = (uxpE - uxmE) * half_inv_dx
+                   + (ux0 - uxe) * half_inv_dx;
+            u_new[ix][Ny - 1] = uxE - dt * uxE * grad + dt * nu * Lapl;
         }
 
         /* Interior */
         for (ix = 1; ix < Nx - 1; ix++) {
             for (iy = 1; iy < Ny - 1; iy++) {
+                double uxy = u[ix][iy];
+                double uxpy = u[ix + 1][iy];
+                double uxmy = u[ix - 1][iy];
+                double uxyp = u[ix][iy + 1];
+                double uxym = u[ix][iy - 1];
+
                 Lapl = 0.0;
                 grad = 0.0;
 
                 /* Compute d2u/dx2 */
-                Lapl += (-2.0 * u[ix][iy] + u[ix + 1][iy] + u[ix - 1][iy]) * inv_dx_sq;
-                grad += (u[ix + 1][iy] - u[ix - 1][iy]) * half_inv_dx;
+                Lapl += (-2.0 * uxy + uxpy + uxmy) * inv_dx_sq;
+                grad += (uxpy - uxmy) * half_inv_dx;
 
                 /* Compute d2u/dy2 */
-                Lapl += (-2.0 * u[ix][iy] + u[ix][iy + 1] + u[ix][iy - 1]) * inv_dy_sq;
-                grad += (u[ix][iy + 1] - u[ix][iy - 1]) * half_inv_dy;
+                Lapl += (-2.0 * uxy + uxyp + uxym) * inv_dy_sq;
+                grad += (uxyp - uxym) * half_inv_dy;
 
                 /* Compute new value of u at this grid point */
-                u_new[ix][iy] = u[ix][iy] - dt * u[ix][iy] * grad + dt * nu * Lapl;
+                u_new[ix][iy] = uxy - dt * uxy * grad + dt * nu * Lapl;
             }
         }
 
