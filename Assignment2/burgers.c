@@ -49,12 +49,14 @@ int main() {
     /* Set grid spacing */
     double dx = 1.0;
     double dy = 1.0;
-    double dxsq = dx * dx;
-    double dysq = dy * dy;
-    double invdx = 1.0 / dx;
-    double invdy = 1.0 / dy;
-    double invdxsq = 1.0 / dxsq;
-    double invdysq = 1.0 / dysq;
+    double dx_sq = dx * dx;
+    double dy_sq = dy * dy;
+    double inv_dx = 1.0 / dx;
+    double inv_dy = 1.0 / dy;
+    double inv_dx_sq = 1.0 / dx_sq;
+    double inv_dy_sq = 1.0 / dy_sq;
+    double half_inv_dx = inv_dx * 0.5;
+    double half_inv_dy = inv_dy * 0.5;
 
     /* Set timestep and K */
     double dt = 0.001;
@@ -101,27 +103,28 @@ int main() {
                 grad = 0.0;
 
                 /* Compute d2u/dx2, accounting for special cases near boundaries */
+
                 if (ix == 0) {
-                    Lapl += (-2.0 * u[ix][iy] + u[ix + 1][iy] + u[Nx - 1][iy]) * invdxsq;  /* left */
-                    grad += (u[ix + 1][iy] - u[Nx - 1][iy]) * invdx * 0.5;
+                    Lapl += (-2.0 * u[ix][iy] + u[ix + 1][iy] + u[Nx - 1][iy]) * inv_dx_sq;  /* left */
+                    grad += (u[ix + 1][iy] - u[Nx - 1][iy]) * half_inv_dx;
                 } else if (ix == Nx - 1) {
-                    Lapl += (-2.0 * u[ix][iy] + u[0][iy] + u[ix - 1][iy]) / dxsq;     /* right */
-                    grad += (u[0][iy] - u[ix - 1][iy]) * invdx * 0.5;
+                    Lapl += (-2.0 * u[ix][iy] + u[0][iy] + u[ix - 1][iy]) / dx_sq;     /* right */
+                    grad += (u[0][iy] - u[ix - 1][iy]) * half_inv_dx;
                 } else {
-                    Lapl += (-2.0 * u[ix][iy] + u[ix + 1][iy] + u[ix - 1][iy]) / dxsq;
-                    grad += (u[ix + 1][iy] - u[ix - 1][iy]) * invdx * 0.5;
+                    Lapl += (-2.0 * u[ix][iy] + u[ix + 1][iy] + u[ix - 1][iy]) / dx_sq;
+                    grad += (u[ix + 1][iy] - u[ix - 1][iy]) * half_inv_dx;
                 }
 
                 /* Compute d2u/dy2, accounting for special cases near boundaries */
                 if (iy == 0) {
-                    Lapl += (-2.0 * u[ix][iy] + u[ix][iy + 1] + u[ix][Ny - 1]) * invdysq;  /* bottom */
-                    grad += (u[ix][iy + 1] - u[ix][Ny - 1]) * invdy * 0.5;
+                    Lapl += (-2.0 * u[ix][iy] + u[ix][iy + 1] + u[ix][Ny - 1]) * inv_dy_sq;  /* bottom */
+                    grad += (u[ix][iy + 1] - u[ix][Ny - 1]) * half_inv_dy;
                 } else if (iy == Ny - 1) {
-                    Lapl += (-2.0 * u[ix][iy] + u[ix][0] + u[ix][iy - 1]) * invdysq;     /* top */
-                    grad += (u[ix][0] - u[ix][iy - 1]) * invdy * 0.5;
+                    Lapl += (-2.0 * u[ix][iy] + u[ix][0] + u[ix][iy - 1]) * inv_dy_sq;     /* top */
+                    grad += (u[ix][0] - u[ix][iy - 1]) * half_inv_dx;
                 } else {
-                    Lapl += (-2.0 * u[ix][iy] + u[ix][iy + 1] + u[ix][iy - 1]) * invdysq;
-                    grad += (u[ix][iy + 1] - u[ix][iy - 1]) * invdy * 0.5;
+                    Lapl += (-2.0 * u[ix][iy] + u[ix][iy + 1] + u[ix][iy - 1]) * inv_dy_sq;
+                    grad += (u[ix][iy + 1] - u[ix][iy - 1]) * half_inv_dy;
                 }
 
                 /* Compute new value of u at this grid point */
