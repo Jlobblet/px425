@@ -92,8 +92,8 @@ int main() {
     for (istep = 1; istep < nstep; istep++) {
 
         /* Loop over grid points */
-        for (iy = 0; iy < Ny; iy++) {
-            for (ix = 0; ix < Nx; ix++) {
+        for (ix = 0; ix < Nx; ix++) {
+            for (iy = 0; iy < Ny; iy++) {
 
                 /* Initialise finite-difference Laplacian */
                 Lapl = 0.0;
