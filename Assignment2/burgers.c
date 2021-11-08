@@ -133,11 +133,9 @@ int main() {
         }
 
         /* Shunt u_new into u */
-        for (iy = 0; iy < Ny; iy++) {
-            for (ix = 0; ix < Nx; ix++) {
-                u[ix][iy] = u_new[ix][iy];
-            }
-        }
+        double** tmp = u_new;
+        u_new = u;
+        u = tmp;
 
         /* Snapshots of grid to file */
         if (istep == isnap) {
