@@ -49,6 +49,8 @@ int main() {
     /* Set grid spacing */
     double dx = 1.0;
     double dy = 1.0;
+    double dxsq = dx * dx;
+    double dysq = dy * dy;
 
     /* Set timestep and K */
     double dt = 0.001;
@@ -96,31 +98,31 @@ int main() {
 
                 /* Compute d2u/dx2, accounting for special cases near boundaries */
                 if (ix == 0) {
-                    Lapl += -2.0 * u[ix][iy] / pow(dx, 2.0) + u[ix + 1][iy] / pow(dx, 2.0) +
-                            u[Nx - 1][iy] / pow(dx, 2.0);  /* left */
+                    Lapl += -2.0 * u[ix][iy] / dxsq + u[ix + 1][iy] / dxsq +
+                            u[Nx - 1][iy] / dxsq;  /* left */
                     grad += (u[ix + 1][iy] - u[Nx - 1][iy]) / dx / 2.0;
                 } else if (ix == Nx - 1) {
-                    Lapl += -2.0 * u[ix][iy] / pow(dx, 2.0) + u[0][iy] / pow(dx, 2.0) +
-                            u[ix - 1][iy] / pow(dx, 2.0);     /* right */
+                    Lapl += -2.0 * u[ix][iy] / dxsq + u[0][iy] / dxsq +
+                            u[ix - 1][iy] / dxsq;     /* right */
                     grad += (u[0][iy] - u[ix - 1][iy]) / dx / 2.0;
                 } else {
-                    Lapl += -2.0 * u[ix][iy] / pow(dx, 2.0) + u[ix + 1][iy] / pow(dx, 2.0) +
-                            u[ix - 1][iy] / pow(dx, 2.0);
+                    Lapl += -2.0 * u[ix][iy] / dxsq + u[ix + 1][iy] / dxsq +
+                            u[ix - 1][iy] / dxsq;
                     grad += (u[ix + 1][iy] - u[ix - 1][iy]) / dx / 2.0;
                 }
 
                 /* Compute d2u/dy2, accounting for special cases near boundaries */
                 if (iy == 0) {
-                    Lapl += -2.0 * u[ix][iy] / pow(dy, 2.0) + u[ix][iy + 1] / pow(dy, 2.0) +
-                            u[ix][Ny - 1] / pow(dy, 2.0);  /* bottom */
+                    Lapl += -2.0 * u[ix][iy] / dysq + u[ix][iy + 1] / dysq +
+                            u[ix][Ny - 1] / dysq;  /* bottom */
                     grad += (u[ix][iy + 1] - u[ix][Ny - 1]) / dy / 2.0;
                 } else if (iy == Ny - 1) {
-                    Lapl += -2.0 * u[ix][iy] / pow(dy, 2.0) + u[ix][0] / pow(dy, 2.0) +
-                            u[ix][iy - 1] / pow(dy, 2.0);     /* top */
+                    Lapl += -2.0 * u[ix][iy] / dysq + u[ix][0] / dysq +
+                            u[ix][iy - 1] / dysq;     /* top */
                     grad += (u[ix][0] - u[ix][iy - 1]) / dy / 2.0;
                 } else {
-                    Lapl += -2.0 * u[ix][iy] / pow(dy, 2.0) + u[ix][iy + 1] / pow(dy, 2.0) +
-                            u[ix][iy - 1] / pow(dy, 2.0);
+                    Lapl += -2.0 * u[ix][iy] / dysq + u[ix][iy + 1] / dysq +
+                            u[ix][iy - 1] / dysq;
                     grad += (u[ix][iy + 1] - u[ix][iy - 1]) / dy / 2.0;
                 }
 
