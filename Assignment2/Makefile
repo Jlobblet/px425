@@ -2,7 +2,7 @@
 
 # C compiler and flags
 CC=gcc
-CFLAGS=-Wall -Wextra -Wpedantic -ffast-math
+CFLAGS=-Wall -Wextra -Wpedantic -ffast-math -mavx2
 
 # Command to use for linking and executable
 LD=gcc
