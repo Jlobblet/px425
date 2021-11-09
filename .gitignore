@@ -70,4 +70,4 @@ cmake-build-relwithdebinfo-coverage/
 \#*.lyx\#
 
 # Benchmark script
-Tools/Assignment2/benchmarks.sh
+Tools/**/benchmark-*.sh
