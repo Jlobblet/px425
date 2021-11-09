@@ -21,21 +21,16 @@
 void allocate2d(double*** a, int Nx, int Ny) {
     double** b_loc;
 
-    b_loc = (double**) calloc(Nx, sizeof(double*));
+    b_loc = (double**) calloc((Nx + 1) * Ny, sizeof(double*));
     if (b_loc == NULL) {
         fprintf(stderr, "malloc error in allocate2d\n");
         fflush(stderr);
-    }
-
-    double* block = (double*) calloc(Nx * Ny, sizeof(double));
-    if (block == NULL) {
-        fprintf(stderr, "malloc error for rows of allocate2d\n");
-        fflush(stderr);
         exit(1);
     }
+
     for (int iy = 0; iy < Nx; iy++) {
 
-        b_loc[iy] = block + iy * Nx;
+        b_loc[iy] = (double*) b_loc + (iy + 1) * Nx;
     }
 
     *a = b_loc;
@@ -44,7 +39,6 @@ void allocate2d(double*** a, int Nx, int Ny) {
 void free2d(double*** a) {
     double** b_loc = *a;
     /* Release memory */
-    free(b_loc[0]);
     free(b_loc);
     *a = NULL;
 }
