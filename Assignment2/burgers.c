@@ -19,7 +19,7 @@
 
 void allocate2d(double*** a, int Nx, int Ny);
 
-void free2d(double*** a, int Nx);
+void free2d(double*** a);
 
 int main() {
     /* Function u on new and current grid */
@@ -272,8 +272,8 @@ int main() {
     fclose(fp);
 
     /* Release memory */
-    free2d(&u, Nx);
-    free2d(&u_new, Nx);
+    free2d(&u);
+    free2d(&u_new);
 
     return EXIT_SUCCESS;
 }
@@ -291,27 +291,24 @@ void allocate2d(double*** a, int Nx, int Ny) {
         fflush(stderr);
     }
 
-    int iy;
-    for (iy = 0; iy < Nx; iy++) {
+    double* block = (double*) calloc(Nx * Ny, sizeof(double));
+    if (block == NULL) {
+        fprintf(stderr, "malloc error for rows of allocate2d\n");
+        fflush(stderr);
+        exit(1);
+    }
+    for (int iy = 0; iy < Nx; iy++) {
 
-        b_loc[iy] = (double*) calloc(Ny, sizeof(double));
-        if (b_loc[iy] == NULL) {
-            fprintf(stderr, "malloc error for row %d of %d in allocate2d\n", iy, Nx);
-            fflush(stderr);
-        }
-
+        b_loc[iy] = block + iy * Nx;
     }
 
     *a = b_loc;
 }
 
-void free2d(double*** a, int Nx) {
-    int iy;
+void free2d(double*** a) {
     double** b_loc = *a;
     /* Release memory */
-    for (iy = 0; iy < Nx; iy++) {
-        free(b_loc[iy]);
-    }
+    free(b_loc[0]);
     free(b_loc);
     *a = NULL;
 }
