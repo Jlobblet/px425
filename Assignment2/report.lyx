@@ -90,105 +90,6 @@ subequations
 
 \begin_body
 
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-This is a template \SpecialChar LyX
- file for articles to be submitted to the American Physical
- Society (APS).
- APS uses the \SpecialChar LaTeX
- class REV\SpecialChar TeX
- for submissions.
- For general information about REV\SpecialChar TeX
- and the latest author guide see 
-\begin_inset Flex URL
-status open
-
-\begin_layout Plain Layout
-
-https://journals.aps.org/revtex
-\end_layout
-
-\end_inset
-
-.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-The style of the document is specified by options in the document preamble!
- For the right document class options, have a look at the elsarticle documentati
-on: 
-\begin_inset Flex URL
-status open
-
-\begin_layout Plain Layout
-
-https://journals.aps.org/files/revtex/summary4-1.pdf
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Plain Layout
-This file uses the option 
-\family sans
-aps
-\family default
- for the 
-\emph on
-American Physical Society
-\emph default
- styling and the option 
-\family sans
-reprint
-\family default
- for a layout close to the final journal.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Preprint
-APS/123-QED
-\begin_inset Note Note
-status collapsed
-
-\begin_layout Plain Layout
-Use the Preprint layout to place your local institutional report number
- in the upper righthand corner of the title page in preprint mode.
- Multiple Preprint layouts are allowed.
- Use the document class option 
-\family sans
-preprintnumbers
-\family default
- under 
-\family sans
-Documents\SpecialChar menuseparator
-Settings
-\family default
- to override the journal defaults to display numbers if necessary.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
 \begin_layout Title
 PX425 Assignment 2 (
 \family typewriter
@@ -227,16 +128,6 @@ today
 \end_inset
 
 
-\begin_inset Note Note
-status collapsed
-
-\begin_layout Plain Layout
-prints the current date; should only be replaced for special cases
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Abstract
@@ -250,61 +141,6 @@ Application of techniques taught in PX425 lectures pertaining to optimisation
 \begin_layout Abstract
 \begin_inset CommandInset toc
 LatexCommand tableofcontents
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Table of contents is optional and should be inserted to this position if
- desired.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Body of paper goes here.
- Some general notes:
-\end_layout
-
-\begin_layout Itemize
-Figures should be put into the text as floats.
- There is no need to do explicit centering.
-\end_layout
-
-\begin_layout Itemize
-Surround figures with the Turn Page layout for landscape.
-\end_layout
-
-\begin_layout Itemize
-Tables should appear as floats within the text.
-\end_layout
-
-\begin_layout Itemize
-The Ruled Table layout adds doubled rules to table and sets a reasonable
- default table settings.
-\end_layout
-
-\begin_layout Itemize
-Surround tables with the Turn Page layout for landscape.
-\end_layout
-
-\begin_layout Itemize
-Use \SpecialChar LyX
-'s span column option to get a full-width table or figure in two-column.
-\end_layout
 
 \end_inset
 
@@ -334,6 +170,8 @@ noprefix "false"
 \end_inset
 
 .
+ Intermediate versions of the program are stored as a private GitHub repository
+ for benchmarking.
 \end_layout
 
 \begin_layout Enumerate
@@ -672,7 +510,7 @@ iy
 \family typewriter
 0
 \family default
-.
+, and similar for other things that are now constants.
 \begin_inset Newline newline
 \end_inset
 
@@ -705,6 +543,8 @@ const
 \end_inset
 
 No tangible effect on performance.
+ This change was kept because it makes it clear that these variables do
+ not change.
 \end_layout
 
 \begin_layout Enumerate
@@ -732,7 +572,8 @@ O0
 \end_inset
 
 As with the earlier precalculation attempts this did not produce a meaningful
- impact on the program's execution time.
+ impact on the program's execution time, but was kept because it made the
+ equations easier to read.
 \end_layout
 
 \begin_layout Enumerate
@@ -3729,6 +3570,16 @@ noprefix "false"
 
 \begin_layout Plain Layout
 0.79
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Disabling this compiler flag did not affect later results.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -3856,7 +3707,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.70
+0.72
 \end_layout
 
 \end_inset
@@ -3984,7 +3835,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.70
+0.72
 \end_layout
 
 \end_inset
@@ -4107,18 +3958,15 @@ Graphs
 
 \begin_layout Standard
 \begin_inset Float figure
-wide false
+wide true
 sideways false
 status collapsed
 
 \begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
 \begin_inset Graphics
 	filename Graphs/0.png
-	width 100col%
+	lyxscale 15
+	width 100text%
 
 \end_inset
 
@@ -4148,19 +3996,16 @@ status collapsed
 \end_layout
 
 \begin_layout Standard
-
-\end_layout
-
-\begin_layout Standard
 \begin_inset Float figure
-wide false
+wide true
 sideways false
 status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename Graphs/1.png
-	width 100col%
+	lyxscale 15
+	width 100text%
 
 \end_inset
 
@@ -4169,6 +4014,10 @@ status collapsed
 
 \begin_layout Plain Layout
 
+\family typewriter
+-O1
+\family default
+ data for each compiler tested.
 \end_layout
 
 \end_inset
@@ -4187,14 +4036,15 @@ status collapsed
 
 \begin_layout Standard
 \begin_inset Float figure
-wide false
+wide true
 sideways false
 status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename Graphs/2.png
-	width 100col%
+	lyxscale 15
+	width 100text%
 
 \end_inset
 
@@ -4206,6 +4056,10 @@ status collapsed
 
 \begin_layout Plain Layout
 
+\family typewriter
+-O2
+\family default
+ data for each compiler tested.
 \end_layout
 
 \end_inset
@@ -4224,14 +4078,15 @@ status collapsed
 
 \begin_layout Standard
 \begin_inset Float figure
-wide false
+wide true
 sideways false
 status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename Graphs/3.png
-	width 100col%
+	lyxscale 15
+	width 100text%
 
 \end_inset
 
@@ -4243,6 +4098,10 @@ status collapsed
 
 \begin_layout Plain Layout
 
+\family typewriter
+-O3
+\family default
+ data for each compiler tested.
 \end_layout
 
 \end_inset
