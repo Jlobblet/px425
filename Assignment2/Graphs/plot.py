@@ -12,7 +12,7 @@ def main():
     optimisation_levels = ["0", "1", "2", "3"]
 
     for o in optimisation_levels:
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(8, 6), dpi=900)
         ax.grid(ls=":")
         for compiler, style in zip(compilers, styles):
             ax.plot(df[f"{compiler}{o}"], label=compiler, ls=style)
