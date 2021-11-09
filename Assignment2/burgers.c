@@ -17,12 +17,72 @@
 
 /* Function prototypes for memory management routines */
 
-void allocate2d(double*** a, int Nx, int Ny);
-
 #ifdef __OPTIMIZE__
-void free2d(double*** a);
+void allocate2d(double*** a, int Nx, int Ny) {
+    double** b_loc;
+
+    b_loc = (double**) calloc(Nx, sizeof(double*));
+    if (b_loc == NULL) {
+        fprintf(stderr, "malloc error in allocate2d\n");
+        fflush(stderr);
+    }
+
+    double* block = (double*) calloc(Nx * Ny, sizeof(double));
+    if (block == NULL) {
+        fprintf(stderr, "malloc error for rows of allocate2d\n");
+        fflush(stderr);
+        exit(1);
+    }
+    for (int iy = 0; iy < Nx; iy++) {
+
+        b_loc[iy] = block + iy * Nx;
+    }
+
+    *a = b_loc;
+}
+
+void free2d(double*** a) {
+    double** b_loc = *a;
+    /* Release memory */
+    free(b_loc[0]);
+    free(b_loc);
+    *a = NULL;
+}
 #else
-void free2d(double*** a, int Nx);
+void allocate2d(double*** a, int Nx, int Ny) {
+
+    double** b_loc;
+
+    b_loc = (double**) calloc(Nx, sizeof(double*));
+    if (b_loc == NULL) {
+        fprintf(stderr, "malloc error in allocate2d\n");
+        fflush(stderr);
+    }
+
+    int iy;
+    for (iy = 0; iy < Nx; iy++) {
+
+        b_loc[iy] = (double*) calloc(Ny, sizeof(double));
+        if (b_loc[iy] == NULL) {
+            fprintf(stderr, "malloc error for row %d of %d in allocate2d\n", iy, Nx);
+            fflush(stderr);
+        }
+
+    }
+
+    *a = b_loc;
+}
+
+void free2d(double*** a, int Nx) {
+    int iy;
+    double** b_loc = *a;
+    /* Release memory */
+    for (iy = 0; iy < Nx; iy++) {
+        free(b_loc[iy]);
+    }
+    free(b_loc);
+    *a = NULL;
+}
 #endif // __OPTIMIZE__
 
 int main() {
@@ -286,74 +346,3 @@ int main() {
 
     return EXIT_SUCCESS;
 }
-
-
-/* Auxiliary routines for memory management */
-
-#ifdef __OPTIMIZE__
-void allocate2d(double*** a, int Nx, int Ny) {
-    double** b_loc;
-
-    b_loc = (double**) calloc(Nx, sizeof(double*));
-    if (b_loc == NULL) {
-        fprintf(stderr, "malloc error in allocate2d\n");
-        fflush(stderr);
-    }
-
-    double* block = (double*) calloc(Nx * Ny, sizeof(double));
-    if (block == NULL) {
-        fprintf(stderr, "malloc error for rows of allocate2d\n");
-        fflush(stderr);
-        exit(1);
-    }
-    for (int iy = 0; iy < Nx; iy++) {
-
-        b_loc[iy] = block + iy * Nx;
-    }
-
-    *a = b_loc;
-}
-
-void free2d(double*** a) {
-    double** b_loc = *a;
-    /* Release memory */
-    free(b_loc[0]);
-    free(b_loc);
-    *a = NULL;
-}
-#else
-void allocate2d(double*** a, int Nx, int Ny) {
-
-    double** b_loc;
-
-    b_loc = (double**) calloc(Nx, sizeof(double*));
-    if (b_loc == NULL) {
-        fprintf(stderr, "malloc error in allocate2d\n");
-        fflush(stderr);
-    }
-
-    int iy;
-    for (iy = 0; iy < Nx; iy++) {
-
-        b_loc[iy] = (double*) calloc(Ny, sizeof(double));
-        if (b_loc[iy] == NULL) {
-            fprintf(stderr, "malloc error for row %d of %d in allocate2d\n", iy, Nx);
-            fflush(stderr);
-        }
-
-    }
-
-    *a = b_loc;
-}
-
-void free2d(double*** a, int Nx) {
-    int iy;
-    double** b_loc = *a;
-    /* Release memory */
-    for (iy = 0; iy < Nx; iy++) {
-        free(b_loc[iy]);
-    }
-    free(b_loc);
-    *a = NULL;
-}
-#endif // __OPTIMIZE__
