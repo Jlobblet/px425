@@ -65,3 +65,9 @@ cmake-build-relwithdebinfo-coverage/
 # F# stuff
 /.ionide/
 /.vscode/
+
+# Lyx lockfile
+\#*.lyx\#
+
+# Benchmark script
+Tools/Assignment2/benchmarks.sh
