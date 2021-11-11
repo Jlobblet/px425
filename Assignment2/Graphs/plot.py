@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def main():
@@ -19,6 +20,7 @@ def main():
 
         ax.set_xlabel("Index of Change")
         ax.set_ylabel("Execution Time / $s$")
+        ax.set_xticks(np.arange(0, len(df), 1.0))
         ax.legend(loc="upper right")
         fig.suptitle(f"Comparison of execution time on -O{o}")
         fig.tight_layout()
