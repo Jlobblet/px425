@@ -173,6 +173,20 @@ int main() {
 
         // Corners
 
+        // On -O1 the compiler does this automatically, but I found it made the equations easier to read, so I kept it.
+        // Naming scheme for these variables:
+        // u {index 1} {index 2}
+        // E = "edge", so Nx - 1 or Ny - 1
+        // e = edge minus one: Nx - 2 or Ny - 2
+        // x or y: ix or iy
+        // postfix p: plus 1
+        // postfix m: minus one
+        // Examples:
+        // u00: u[0][0]
+        // u1E: u[1][Ny - 1]
+        // uxmE = u[ix - 1][Ny - 1]
+        // u0yp = u[0][iy + 1]
+
         double u00 = u[0][0];
         double u10 = u[1][0];
         double uE0 = u[Nx - 1][0];
