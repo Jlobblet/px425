@@ -18,6 +18,7 @@
 // Function prototypes for memory management routines
 
 #ifdef __OPTIMIZE__
+
 void allocate2d(double*** a, int Nx, int Ny) {
     double** b_loc;
 
@@ -25,13 +26,14 @@ void allocate2d(double*** a, int Nx, int Ny) {
     if (b_loc == NULL) {
         fprintf(stderr, "malloc error in allocate2d\n");
         fflush(stderr);
+        exit(EXIT_FAILURE);
     }
 
     double* block = (double*) calloc(Nx * Ny, sizeof(double));
     if (block == NULL) {
         fprintf(stderr, "malloc error for rows of allocate2d\n");
         fflush(stderr);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     for (int iy = 0; iy < Nx; iy++) {
 
@@ -47,6 +49,7 @@ void free2d(double*** a) {
     free(b_loc);
     *a = NULL;
 }
+
 #else
 void allocate2d(double*** a, int Nx, int Ny) {
 
@@ -56,6 +59,7 @@ void allocate2d(double*** a, int Nx, int Ny) {
     if (b_loc == NULL) {
         fprintf(stderr, "malloc error in allocate2d\n");
         fflush(stderr);
+        exit(EXIT_FAILURE);
     }
 
     int iy;
@@ -65,6 +69,7 @@ void allocate2d(double*** a, int Nx, int Ny) {
         if (b_loc[iy] == NULL) {
             fprintf(stderr, "malloc error for row %d of %d in allocate2d\n", iy, Nx);
             fflush(stderr);
+            exit(EXIT_FAILURE);
         }
 
     }
@@ -328,6 +333,7 @@ int main() {
     if (fp == NULL) {
         fprintf(stderr, "Error opening final_grid.dat for output\n");
         fflush(stderr);
+        return EXIT_FAILURE;
     }
 
     for (ix = 0; ix < Nx - 1; ix++) {
