@@ -275,12 +275,9 @@ int main() {
                 double uxyp = u[ix][iy + 1];
                 double uxym = u[ix][iy - 1];
 
-                Lapl = 0.0;
-                grad = 0.0;
 
-                /* Compute d2u/dx2 */
-                Lapl += (-2.0 * uxy + uxpy + uxmy) * inv_dx_sq;
-                grad += (uxpy - uxmy) * half_inv_dx;
+                Lapl = (-2.0 * uxy + uxpy + uxmy) * inv_dx_sq + (-2.0 * uxy + uxyp + uxym) * inv_dy_sq;
+                grad = (uxpy - uxmy) * half_inv_dx + (uxyp - uxym) * half_inv_dy;
 
                 // Compute new value of u at this grid point
                 u_new[ix][iy] = uxy - dt * uxy * grad + dt * nu * Lapl;
