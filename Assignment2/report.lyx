@@ -148,6 +148,195 @@ LatexCommand tableofcontents
 \end_layout
 
 \begin_layout Section
+Foreword
+\end_layout
+
+\begin_layout Standard
+For compilation, the overall fastest result is using 
+\family typewriter
+clang -ffast-math -mavx -mavx2 -march=native -O3 burgers.c makePNG.c mt19937ar.c
+\family default
+.
+ The same flags produced the fastest performance for 
+\family typewriter
+gcc
+\family default
+, although it was slower than 
+\family typewriter
+clang
+\family default
+ 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "tab:Average-execution-times"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The versions of compilers used are shown in table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:compiler-versions"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Minor changes were made to 
+\family typewriter
+makePNG.c
+\family default
+ in order to make it compile with 
+\family typewriter
+-Werror
+\family default
+ enabled.
+ A 
+\family typewriter
+Makefile
+\family default
+ is included which has the used compiler flags.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="2">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Compiler
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Version
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+gcc
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.2.0
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+clang
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11.0.1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+icc
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+19.0.5.281
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:compiler-versions"
+
+\end_inset
+
+Versions of used compilers.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:level1"
@@ -211,8 +400,8 @@ dx.
 \family typewriter
 pow
 \family default
- were for squaring variables which is trivially replacable with simple multiplic
-ation.
+ were for squaring variables which is trivially replaceable with simple
+ multiplication.
  Furthermore, since 
 \family typewriter
 dx
@@ -461,7 +650,7 @@ name "enu:branching"
 
 Remove branching in the main loop.
  The boundary conditions on the equation can be divided into three regimes:
- the four corner elements of the grid, the elements along the egdes, and
+ the four corner elements of the grid, the elements along the edges, and
  the interior elements.
  Each of these regimes had a different method applied to remove branching.
 \end_layout
@@ -518,7 +707,7 @@ Removing branching sped up the code at everything except
 \family typewriter
 -O2
 \family default
-, where peformance stayed the same as before.
+, where performance stayed the same as before.
  
 \end_layout
 
@@ -1190,7 +1379,182 @@ noprefix "false"
 \begin_inset Newline newline
 \end_inset
 
-This was an effective change, keeping the desireable behaviour in most cases.
+This was an effective change, keeping the desirable behaviour in most cases.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:factorisation"
+
+\end_inset
+
+Further factorisation of the equation for the next value of 
+\family typewriter
+u
+\family default
+ (
+\family typewriter
+u_new[ix][iy]
+\begin_inset space \thinspace{}
+\end_inset
+
+=
+\begin_inset space \thinspace{}
+\end_inset
+
+uxy
+\begin_inset space \thinspace{}
+\end_inset
+
+-
+\begin_inset space \thinspace{}
+\end_inset
+
+dt
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+uxy
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+grad
+\begin_inset space \thinspace{}
+\end_inset
+
++
+\begin_inset space \thinspace{}
+\end_inset
+
+dt
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+nu
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+Lapl
+\family default
+).
+ Counting the floating point operations here, there are 4 multiplications
+ and 2 additions/subtractions.
+ Factorising out dt: 
+\family typewriter
+u_new[ix][iy]
+\begin_inset space \thinspace{}
+\end_inset
+
+=
+\begin_inset space \thinspace{}
+\end_inset
+
+uxy
+\begin_inset space \thinspace{}
+\end_inset
+
+-
+\begin_inset space \thinspace{}
+\end_inset
+
+dt
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+(uxy
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+grad
+\begin_inset space \thinspace{}
+\end_inset
+
+-
+\begin_inset space \thinspace{}
+\end_inset
+
+nu
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+Lapl)
+\family default
+ and there now only 3 multiplications and 2 additions/subtractions.
+\begin_inset Newline newline
+\end_inset
+
+For 
+\family typewriter
+gcc
+\family default
+ change had an improvement on 
+\family typewriter
+-O0
+\family default
+.
+ At 
+\family typewriter
+-O1
+\family default
+ and 
+\family typewriter
+-O2
+\family default
+ there was no improvement - the compiler should be using 
+\family typewriter
+-ffast-math
+\family default
+ to apply this automatically.
+ Interestingly there was still a performance gain at 
+\family typewriter
+-O3
+\family default
+.
+ Evidently this helped the compiler determine a more optimal way of doing
+ the calculation.
+ This what not uniform across compilers, though.
+ 
+\family typewriter
+clang
+\family default
+ suffered a performance hit when this was applied, even at 
+\family typewriter
+-O3
+\family default
+, as did 
+\family typewriter
+icc
+\family default
+.
 \end_layout
 
 \begin_layout Section
@@ -1215,7 +1579,7 @@ Using pre- rather than post-increment operators.
 x++
 \family default
 ).
- After changing all occurences of this in the program, no change in execution
+ After changing all occurrences of this in the program, no change in execution
  time was measured.
 \end_layout
 
@@ -1300,8 +1664,8 @@ malloc
 \family typewriter
 calloc
 \family default
- is slower since it takes time to initalise memory to zero values, however
- this was not measureable as memory allocation does not take a significant
+ is slower since it takes time to initialise memory to zero values, however
+ this was not measurable as memory allocation does not take a significant
  amount of time in this program.
  This change was rejected because the signature and semantics of 
 \family typewriter
@@ -1314,6 +1678,15 @@ calloc
 \family default
  may allocate more memory than requested to fit alignment requirements,
  which can be beneficial.
+\end_layout
+
+\begin_layout Itemize
+Manually applying an unroll-and-jam optimisation to mitigate pipeline stalls.
+ This is handled automatically by the compiler at 
+\family typewriter
+-O3
+\family default
+.
 \begin_inset Newpage pagebreak
 \end_inset
 
@@ -1334,7 +1707,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Tabular
-<lyxtabular version="3" rows="20" columns="13">
+<lyxtabular version="3" rows="21" columns="13">
 <features booktabs="true" tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -3689,7 +4062,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-2.3
+2.4
 \end_layout
 
 \end_inset
@@ -3707,7 +4080,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.72
+0.65
 \end_layout
 
 \end_inset
@@ -3786,7 +4159,7 @@ noprefix "false"
 </cell>
 </row>
 <row>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -3804,7 +4177,7 @@ noprefix "false"
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -3813,11 +4186,139 @@ noprefix "false"
 
 \end_inset
 </cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.72
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8.3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.55
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.55
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9.6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.5
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-2.3
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:factorisation"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8.8
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.4
 \end_layout
 
 \end_inset
@@ -3844,52 +4345,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-8.3
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-1.3
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-0.55
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-0.55
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-9.6
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-1.5
+8.2
 \end_layout
 
 \end_inset
@@ -3907,7 +4363,52 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.5
+0.56
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.56
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8.9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.6
 \end_layout
 
 \end_inset
@@ -3929,7 +4430,7 @@ name "tab:Average-execution-times"
 
 Average execution times for each compiler and optimisation level by change
  applied.
- Values are to two signifiant figures owing to clock precision.
+ Values are to two significant figures owing to clock precision.
  Values were measured on 
 \family typewriter
 stan1
