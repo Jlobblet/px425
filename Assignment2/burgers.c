@@ -1,27 +1,28 @@
-//  ANSI-C code (un optimised) for PX425 assignment 2 2021
+// C99 code (optimised) for PX425 assignment 2 2021
 // Evolves a function u in 2D via finite differences
-//  of the 2D Burgers Equation (simplified)
+// of the 2D Burgers Equation (simplified)
 //
 //  d u          du   du           d^2       d^2
 //  ----- = -u ( -- + -- ) + nu ( ---- u  +  ---- u )
 //  d t          dx   dy          dx^2       dy^2
 //
-//  Based originally on code created by D. Quigley
-//  Adapted by N. Hine
+// Based originally on code created by D. Quigley
+// Adapted by N. Hine
+// This code by SCRTP user phuwcs (1833194).
+// Recommended compilation flags: -std=c99 -lpng -ffast-math -mavx -mavx2 -march=native -O3
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <time.h>
 #include "makePNG.h"
 #include "mt19937ar.h"
-
-// Function prototypes for memory management routines
 
 #ifdef __OPTIMIZE__
 
 void allocate2d(double*** a, int Nx, int Ny) {
     double** b_loc;
 
+    // Allocate an array to store pointers to each row
     b_loc = (double**) calloc(Nx, sizeof(double*));
     if (b_loc == NULL) {
         fprintf(stderr, "malloc error in allocate2d\n");
@@ -29,6 +30,7 @@ void allocate2d(double*** a, int Nx, int Ny) {
         exit(EXIT_FAILURE);
     }
 
+    // Allocate a single block of memory that will be sub-divided into rows.
     double* block = (double*) calloc(Nx * Ny, sizeof(double));
     if (block == NULL) {
         fprintf(stderr, "malloc error for rows of allocate2d\n");
@@ -45,6 +47,7 @@ void allocate2d(double*** a, int Nx, int Ny) {
 
 void free2d(double*** a) {
     double** b_loc = *a;
+    // Since the inner arrays are actually a single large one, only start needs to bed freed.
     free(b_loc[0]);
     free(b_loc);
     *a = NULL;
@@ -95,15 +98,17 @@ int main() {
     // Approximate Laplacian
     double Lapl, grad;
 
-    // Number of grid points
+    // Number of grid points along the x direction
     const int Nx = 256;
+    // Number of grid points along the y direction
     const int Ny = 256;
 
     // Loop counters
     int ix, iy, istep;
 
-    // Filename to which the grid is drawn
+    // Index of the next iteration to save a snapshot of
     int isnap = 0;
+    // Filename to which the grid is drawn
     char filename[25];
 
     // Initial time
@@ -155,6 +160,7 @@ int main() {
     // Setup time
     clock_t t2 = clock();
     printf("Setup time                    : %15.6f seconds\n", (double) (t2 - t1) / (double) CLOCKS_PER_SEC);
+    // Flush so that if output is redirected it gets sent immediately.
     fflush(stdout);
     t1 = t2;
 
@@ -177,6 +183,7 @@ int main() {
         // I: interior
 
         // Corners
+        // In the corners periodic boundary conditions apply in both the x and y direction.
 
         // On -O1 the compiler does this automatically, but I found it made the equations easier to read, so I kept it.
         // Naming scheme for these variables:
@@ -202,6 +209,9 @@ int main() {
         double uEE = u[Nx - 1][Ny - 1];
         double u1E = u[1][Ny - 1];
         double u0e = u[0][Ny - 2];
+
+        // In the following calculations for Lapl and grad, the x contribution is the first line
+        // and the y contribution is the second line.
 
         // Bottom left
         // ix = 0, iy = 0
@@ -236,6 +246,8 @@ int main() {
         u_new[Nx - 1][Ny - 1] = uEE - dt * (uEE * grad + nu * Lapl);
 
         // Edges
+        // Along the edges, the periodic boundary condition applies in one direction.
+
         // Left and right
         // ix = 0 and ix = Nx - 1
         for (iy = 1; iy < Ny - 1; iy++) {
@@ -248,18 +260,21 @@ int main() {
             double uEyp = u[Nx - 1][iy + 1];
             double uEym = u[Nx - 1][iy - 1];
 
+            // Left side
             Lapl = (-2.0 * u0y + u1y + uEy) * inv_dx_sq  // left
-                   + (-2.0 * u0y + u0yp + u0ym) * inv_dy_sq;
+                   + (-2.0 * u0y + u0yp + u0ym) * inv_dy_sq; // varying y
             grad = (u1y - uEy) * half_inv_dx
                    + (u0yp - u0ym) * half_inv_dy;
             u_new[0][iy] = u0y - dt * (u0y * grad + nu * Lapl);
 
+            // Right side
             Lapl = (-2.0 * uEy + u0y + uey) * inv_dx_sq // right
-                   + (-2.0 * uEy + uEyp + uEym) * inv_dy_sq;
+                   + (-2.0 * uEy + uEyp + uEym) * inv_dy_sq; // varying y
             grad = (u0y - uey) * half_inv_dx
                    + (uEyp - uEym) * half_inv_dy;
             u_new[Nx - 1][iy] = uEy - dt * (uEy * grad + nu * Lapl);
         }
+
         // Bottom and top
         // iy = 0 and iy = Ny - 1
         for (ix = 1; ix < Nx - 1; ix++) {
@@ -272,13 +287,13 @@ int main() {
             double uxmE = u[ix - 1][Ny - 1];
             double uxe = u[ix][Ny - 1 - 1];
 
-            Lapl = (-2.0 * ux0 + uxp0 + uxm0) * inv_dx_sq
+            Lapl = (-2.0 * ux0 + uxp0 + uxm0) * inv_dx_sq // varying x
                    + (-2.0 * ux0 + ux1 + uxE) * inv_dy_sq; // bottom
             grad = (uxp0 - uxm0) * half_inv_dx
                    + (ux1 - uxE) * half_inv_dy;
             u_new[ix][0] = ux0 - dt * (ux0 * grad - nu * Lapl);
 
-            Lapl = (-2.0 * uxE + uxpE + uxmE) * inv_dx_sq
+            Lapl = (-2.0 * uxE + uxpE + uxmE) * inv_dx_sq // varying x
                    + (-2.0 * uxE + ux0 + uxe) * inv_dy_sq; // top
             grad = (uxpE - uxmE) * half_inv_dx
                    + (ux0 - uxe) * half_inv_dx;
@@ -286,6 +301,8 @@ int main() {
         }
 
         // Interior
+        // In the interior, the periodic boundary condition doesn't matter because every adjacent point is within the grid.
+
         for (ix = 1; ix < Nx - 1; ix++) {
             for (iy = 1; iy < Ny - 1; iy++) {
                 double uxy = u[ix][iy];
@@ -294,11 +311,11 @@ int main() {
                 double uxyp = u[ix][iy + 1];
                 double uxym = u[ix][iy - 1];
 
+                Lapl = (-2.0 * uxy + uxpy + uxmy) * inv_dx_sq
+                       + (-2.0 * uxy + uxyp + uxym) * inv_dy_sq;
+                grad = (uxpy - uxmy) * half_inv_dx
+                       + (uxyp - uxym) * half_inv_dy;
 
-                Lapl = (-2.0 * uxy + uxpy + uxmy) * inv_dx_sq + (-2.0 * uxy + uxyp + uxym) * inv_dy_sq;
-                grad = (uxpy - uxmy) * half_inv_dx + (uxyp - uxym) * half_inv_dy;
-
-                // Compute new value of u at this grid point
                 u_new[ix][iy] = uxy - dt * (uxy * grad - nu * Lapl);
             }
         }

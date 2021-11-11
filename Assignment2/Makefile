@@ -2,12 +2,12 @@
 
 # C compiler and flags
 CC=gcc
-CFLAGS=-Wall -Wextra -Wpedantic -ffast-math -mavx2 -mavx -march=native
+CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=c99 -ffast-math -mavx2 -mavx -march=native
 
 # Command to use for linking and executable
 LD=gcc
 EXE=burgers
-LDFLAGS = -lpng -lm
+LDFLAGS=-lpng
 
 all: burgers
 
@@ -15,16 +15,16 @@ all: burgers
 burgers : makePNG.o burgers.o mt19937ar.o
 	$(CC) $(CFLAGS) -o $(EXE) makePNG.o burgers.o mt19937ar.o $(LDFLAGS)
 
-O0: CFLAGS += -O0 -D NDEBUG
+O0 : CFLAGS += -O0 -D NDEBUG
 O0 : burgers
 
-O1: CFLAGS += -O1
+O1 : CFLAGS += -O1
 O1 : burgers
 
-O2: CFLAGS += -O2
+O2 : CFLAGS += -O2
 O2 : burgers
 
-O3: CFLAGS += -O3
+O3 : CFLAGS += -O3
 O3 : burgers
 
 run :
@@ -37,5 +37,7 @@ movie:
 clean :
 	rm -rf *.o *.mod ./$(EXE)
 
-%.o: %.c
+%.o : %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+%.c :
