@@ -154,7 +154,8 @@ Foreword
 \begin_layout Standard
 For compilation, the overall fastest result is using 
 \family typewriter
-clang -ffast-math -mavx -mavx2 -march=native -O3 burgers.c makePNG.c mt19937ar.c
+clang -std=c99 -lpng -ffast-math -mavx -mavx2 -march=native -O3 burgers.c
+ makePNG.c mt19937ar.c
 \family default
 .
  The same flags produced the fastest performance for 
@@ -199,11 +200,18 @@ makePNG.c
 -Werror
 \family default
  enabled.
- A 
+\end_layout
+
+\begin_layout Standard
+A 
 \family typewriter
 Makefile
 \family default
- is included which has the used compiler flags.
+ is included which has the used compiler flags, and 
+\family typewriter
+make CC=clang
+\family default
+ (for example) can be used to configure the C compiler.
 \end_layout
 
 \begin_layout Standard
@@ -337,12 +345,6 @@ Versions of used compilers.
 \end_layout
 
 \begin_layout Section
-\begin_inset CommandInset label
-LatexCommand label
-name "sec:level1"
-
-\end_inset
-
 Changes Made
 \end_layout
 
@@ -420,6 +422,7 @@ dx
 dy
 \family default
  are set.
+ This also removed the requirement to link the math library.
 \begin_inset Newline newline
 \end_inset
 
@@ -442,10 +445,18 @@ name "enu:swap"
 
 \end_inset
 
-When u_new is moved into u, swap pointers of the two arrays rather than
- copying the values one-by-one.
+When 
+\family typewriter
+u_new
+\family default
+ is moved into 
+\family typewriter
+u
+\family default
+, swap pointers of the two arrays rather than copying the values one-by-one.
  That is to say:
 \begin_inset listings
+lstparams "language=C"
 inline false
 status open
 
@@ -493,7 +504,7 @@ memcpy
 \begin_inset Newline newline
 \end_inset
 
-This change good improvements at all optimisation levels.
+This change resulted in good improvements at all optimisation levels.
 \end_layout
 
 \begin_layout Enumerate
@@ -676,7 +687,7 @@ For the interior, the original approach was used.
 \begin_layout Standard
 \noindent
 This meant in each case no branching was required, as only one pair of condition
-s from two two 
+s from the two 
 \family typewriter
 if
 \family default
@@ -843,6 +854,510 @@ noprefix "false"
 s on the equations involved.
  The loss of precision in the low-precision bits is not relevant to this
  program since its output is only to five significant figures.
+\begin_inset Newline newline
+\end_inset
+
+This change lead to a decrease in execution time when the code was optimised,
+ since this flag does nothing at 
+\family typewriter
+-O0
+\family default
+.
+ It was an effective change since the final output of the program is still
+ correct.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:mavx2"
+
+\end_inset
+
+Enabling the 
+\family typewriter
+-mavx2
+\family default
+ compiler flag.
+ This flag allows the compiler to emit 
+\family typewriter
+avx2
+\family default
+ SIMD instructions.
+ These instructions use 256-bit registers in the CPU capable of transforming
+ 4 double precision floating-point numbers at once, providing a significant
+ increase in speed.
+\begin_inset Newline newline
+\end_inset
+
+As with above, this change only had an effect when optimisation was enabled.
+ Leveraging 
+\family typewriter
+avx2
+\family default
+ instructions provided good increase in performance at 
+\family typewriter
+-O3
+\family default
+ but not much below that.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:mavx"
+
+\end_inset
+
+Enabling the 
+\family typewriter
+-mavx
+\family default
+ compiler flag.
+ This was enabled in case the compiler preferred to use 128-bit registers
+ with the same function as above in places over the 256-bit 
+\family typewriter
+avx2
+\family default
+ registers.
+\begin_inset Newline newline
+\end_inset
+
+This flag had a slight improvement in the 
+\family typewriter
+-O1
+\family default
+ case.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:march=native"
+
+\end_inset
+
+Enabling the 
+\family typewriter
+-march=native
+\family default
+ compiler flag.
+ This specifies that the compiler should generate assembly code targeting
+ the specific CPU architecture running on the machine the program is compiled
+ on.
+ This was enabled as it allows the compiler to perform more specific optimisatio
+ns and emit more specific instructions, which are better suited to the machine
+ the program runs on.
+\begin_inset Newline newline
+\end_inset
+
+Interestingly this made the program slower for 
+\family typewriter
+gcc
+\family default
+ on 
+\family typewriter
+-O3
+\family default
+ for unknown reasons.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:memory"
+
+\end_inset
+
+Changing the memory allocation regime to allocate a contiguous block of
+ the total required size.
+ Instead of allocating many nested arrays, allocate one large array and
+ then set regions of the outer array to offsets of the inner one.
+ This approach combines the best of both the rejected 2D array 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "bad-2darray"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and the nested approach, namely spatial locality and access via only two
+ dereferences.
+\begin_inset Newline newline
+\end_inset
+
+This change increased the execution time at 
+\family typewriter
+-O0
+\family default
+ and 
+\family typewriter
+-O1
+\family default
+, potentially because the program was not making fast enough use of the
+ values in the cache (due to a lack of 
+\family typewriter
+avx
+\family default
+ instructions at this optimisation level?) requiring them to be loaded again.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:preprocessor-memory"
+
+\end_inset
+
+Using preprocessor directives to change the memory management method based
+ on whether the 
+\family typewriter
+__OPTIMIZE__
+\family default
+ macro is defined or not.
+ This mitigates the performance penalty on 
+\family typewriter
+-O0
+\family default
+ of 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "enu:memory"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ while retaining its benefits when the optimiser is running.
+\begin_inset Newline newline
+\end_inset
+
+This was an effective change, keeping the desirable behaviour in most cases.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset CommandInset label
+LatexCommand label
+name "enu:factorisation"
+
+\end_inset
+
+Further factorisation of the equation for the next value of 
+\family typewriter
+u
+\family default
+ (
+\family typewriter
+u_new[ix][iy]
+\begin_inset space \thinspace{}
+\end_inset
+
+=
+\begin_inset space \thinspace{}
+\end_inset
+
+uxy
+\begin_inset space \thinspace{}
+\end_inset
+
+-
+\begin_inset space \thinspace{}
+\end_inset
+
+dt
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+uxy
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+grad
+\begin_inset space \thinspace{}
+\end_inset
+
++
+\begin_inset space \thinspace{}
+\end_inset
+
+dt
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+nu
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+Lapl
+\family default
+).
+ Counting the floating point operations here, there are 4 multiplications
+ and 2 additions/subtractions.
+ Factorising out dt: 
+\family typewriter
+u_new[ix][iy]
+\begin_inset space \thinspace{}
+\end_inset
+
+=
+\begin_inset space \thinspace{}
+\end_inset
+
+uxy
+\begin_inset space \thinspace{}
+\end_inset
+
+-
+\begin_inset space \thinspace{}
+\end_inset
+
+dt
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+(uxy
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+grad
+\begin_inset space \thinspace{}
+\end_inset
+
+-
+\begin_inset space \thinspace{}
+\end_inset
+
+nu
+\begin_inset space \thinspace{}
+\end_inset
+
+*
+\begin_inset space \thinspace{}
+\end_inset
+
+Lapl)
+\family default
+ and there now only 3 multiplications and 2 additions/subtractions.
+\begin_inset Newline newline
+\end_inset
+
+For 
+\family typewriter
+gcc
+\family default
+ change had an improvement on 
+\family typewriter
+-O0
+\family default
+.
+ At 
+\family typewriter
+-O1
+\family default
+ and 
+\family typewriter
+-O2
+\family default
+ there was no improvement - the compiler should be using 
+\family typewriter
+-ffast-math
+\family default
+ to apply this automatically.
+ Interestingly there was still a performance gain at 
+\family typewriter
+-O3
+\family default
+.
+ Evidently this helped the compiler determine a more optimal way of doing
+ the calculation.
+\end_layout
+
+\begin_layout Section
+Rejected Changes
+\end_layout
+
+\begin_layout Standard
+Some changes were made that did not result in a significant change of execution
+ time, and were discarded.
+ These are listed here.
+\end_layout
+
+\begin_layout Itemize
+Using pre- rather than post-increment operators.
+ It is sometimes said (mostly for older compilers) that the pre-increment
+ operator (
+\family typewriter
+++x
+\family default
+) is more efficient than the post-increment operator (
+\family typewriter
+x++
+\family default
+).
+ This is because compilers retained a copy of the previous value so it could
+ be referenced later.
+ After changing all occurrences of this in the program, no change in execution
+ time was measured.
+ Modern compilers do not create this copy if the value is unused.
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset label
+LatexCommand label
+name "bad-2darray"
+
+\end_inset
+
+Using a flattened 2D array rather than a nested one.
+ A flat 2D array implementation was trialled as follows:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset listings
+lstparams "language=C"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+typedef struct {
+\end_layout
+
+\begin_layout Plain Layout
+
+	double* values;
+\end_layout
+
+\begin_layout Plain Layout
+
+	int n_rows;
+\end_layout
+
+\begin_layout Plain Layout
+
+	int n_cols;
+\end_layout
+
+\begin_layout Plain Layout
+
+} array2d_t;
+\end_layout
+
+\end_inset
+
+By flattening the array, rather than having nested arrays, the entire grid
+ of values is spatially close.
+ However, it was found that the overhead in accessing elements was not worth
+ the gains in spatial locality.
+ This overhead comes from the way that values are stored in the grid.
+ To access the element at 
+\begin_inset Formula $i,j$
+\end_inset
+
+ the program must compute 
+\begin_inset Formula $ix+j$
+\end_inset
+
+ where 
+\begin_inset Formula $x$
+\end_inset
+
+ is the number of rows, then dereference that offset.
+ This is two operations followed by a pointer dereference.
+ When using nested arrays, the program only has to perform two dereferences
+ with no addition or multiplication, which is significantly faster.
+\end_layout
+
+\begin_layout Itemize
+Replacing 
+\family typewriter
+calloc
+\family default
+ calls with 
+\family typewriter
+malloc
+\family default
+.
+ 
+\family typewriter
+calloc
+\family default
+ is slower since it takes time to initialise memory to zero values, however
+ this was not measurable as memory allocation does not take a significant
+ amount of time in this program.
+ This change was rejected because the signature and semantics of 
+\family typewriter
+calloc
+\family default
+ is preferred by the author.
+ Furthermore, 
+\family typewriter
+calloc
+\family default
+ may allocate more memory than requested to fit alignment requirements,
+ which can be beneficial.
+\end_layout
+
+\begin_layout Itemize
+Manually applying an unroll-and-jam optimisation to mitigate pipeline stalls.
+ This is handled automatically by the compiler at 
+\family typewriter
+-O3
+\family default
+.
+ There was no measureable improvement when this was added, presumably because
+ the loop already has enough instructions to prevent a stall.
+ Examining the emitted assembly 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "alg:interior-loop"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ showed there are plenty of instructions per loop already.
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+\start_of_appendix
+Tables and Graphs
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float table
 wide true
 sideways false
@@ -1016,8 +1531,6 @@ This is a default flag value that enables optimisations which assume default
 
 \family typewriter
 -fno-signaling-nans
-\family default
- 
 \end_layout
 
 \end_inset
@@ -1202,500 +1715,6 @@ Flags and effects enabled by
 \end_inset
 
 
-\begin_inset Newline newline
-\end_inset
-
-This change lead to a decrease in execution time when the code was optimised,
- since this flag does nothing at 
-\family typewriter
--O0
-\family default
-.
- It was an effective change since the final output of the program is still
- correct.
-\end_layout
-
-\begin_layout Enumerate
-\begin_inset CommandInset label
-LatexCommand label
-name "enu:mavx2"
-
-\end_inset
-
-Enabling the 
-\family typewriter
--mavx2
-\family default
- compiler flag.
- This flag allows the compiler to emit 
-\family typewriter
-avx2
-\family default
- SIMD instructions.
- These instructions use 256-bit registers in the CPU capable of transforming
- 4 double precision floating-point numbers at once, providing a significant
- increase in speed.
-\begin_inset Newline newline
-\end_inset
-
-As with above, this change only had an effect when optimisation was enabled.
- Leveraging 
-\family typewriter
-avx2
-\family default
- instructions provided good increase in performance at 
-\family typewriter
--O3
-\family default
- but not much below that.
-\end_layout
-
-\begin_layout Enumerate
-\begin_inset CommandInset label
-LatexCommand label
-name "enu:mavx"
-
-\end_inset
-
-Enabling the 
-\family typewriter
--mavx
-\family default
- compiler flag.
- This was enabled in case the compiler preferred to use 128-bit registers
- with the same function as above in places over the 256-bit 
-\family typewriter
-avx2
-\family default
- registers.
-\begin_inset Newline newline
-\end_inset
-
-This flag had a slight improvement in the 
-\family typewriter
--O1
-\family default
- case.
-\end_layout
-
-\begin_layout Enumerate
-\begin_inset CommandInset label
-LatexCommand label
-name "enu:march=native"
-
-\end_inset
-
-Enabling the 
-\family typewriter
--march=native
-\family default
- compiler flag.
- This specifies that the compiler should generate assembly code targeting
- the specific CPU architecture running on the machine the program is compiled
- on.
- This was enabled as it allows the compiler to perform more specific optimisatio
-ns and emit more specific instructions, which are better suited to the machine
- the program runs on.
-\begin_inset Newline newline
-\end_inset
-
-Interestingly this made the program slower for 
-\family typewriter
-gcc
-\family default
- on 
-\family typewriter
--O3
-\family default
- for unknown reasons.
-\end_layout
-
-\begin_layout Enumerate
-\begin_inset CommandInset label
-LatexCommand label
-name "enu:memory"
-
-\end_inset
-
-Changing the memory allocation regime to allocate a contiguous block of
- the total required size.
- Instead of allocating many nested arrays, allocate one large array and
- then set regions of the outer array to offsets of the inner one.
- This approach combines the best of both the rejected 2D array 
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "bad-2darray"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
- and the nested approach, namely spatial locality and access via only two
- dereferences.
-\begin_inset Newline newline
-\end_inset
-
-This change increased the execution time at 
-\family typewriter
--O0
-\family default
- and 
-\family typewriter
--O1
-\family default
-, potentially because the program was not making fast enough use of the
- values in the cache (due to a lack of 
-\family typewriter
-avx
-\family default
- instructions at this optimisation level?) requiring them to be loaded again.
-\end_layout
-
-\begin_layout Enumerate
-\begin_inset CommandInset label
-LatexCommand label
-name "enu:preprocessor-memory"
-
-\end_inset
-
-Using preprocessor directives to change the memory management method based
- on whether the 
-\family typewriter
-__OPTIMIZE__
-\family default
- macro is defined or not.
- This mitigates the performance penalty on -O0 of 
-\begin_inset CommandInset ref
-LatexCommand vpageref
-reference "enu:memory"
-plural "false"
-caps "false"
-noprefix "false"
-
-\end_inset
-
- while retaining its benefits when the optimiser is running.
-\begin_inset Newline newline
-\end_inset
-
-This was an effective change, keeping the desirable behaviour in most cases.
-\end_layout
-
-\begin_layout Enumerate
-\begin_inset CommandInset label
-LatexCommand label
-name "enu:factorisation"
-
-\end_inset
-
-Further factorisation of the equation for the next value of 
-\family typewriter
-u
-\family default
- (
-\family typewriter
-u_new[ix][iy]
-\begin_inset space \thinspace{}
-\end_inset
-
-=
-\begin_inset space \thinspace{}
-\end_inset
-
-uxy
-\begin_inset space \thinspace{}
-\end_inset
-
--
-\begin_inset space \thinspace{}
-\end_inset
-
-dt
-\begin_inset space \thinspace{}
-\end_inset
-
-*
-\begin_inset space \thinspace{}
-\end_inset
-
-uxy
-\begin_inset space \thinspace{}
-\end_inset
-
-*
-\begin_inset space \thinspace{}
-\end_inset
-
-grad
-\begin_inset space \thinspace{}
-\end_inset
-
-+
-\begin_inset space \thinspace{}
-\end_inset
-
-dt
-\begin_inset space \thinspace{}
-\end_inset
-
-*
-\begin_inset space \thinspace{}
-\end_inset
-
-nu
-\begin_inset space \thinspace{}
-\end_inset
-
-*
-\begin_inset space \thinspace{}
-\end_inset
-
-Lapl
-\family default
-).
- Counting the floating point operations here, there are 4 multiplications
- and 2 additions/subtractions.
- Factorising out dt: 
-\family typewriter
-u_new[ix][iy]
-\begin_inset space \thinspace{}
-\end_inset
-
-=
-\begin_inset space \thinspace{}
-\end_inset
-
-uxy
-\begin_inset space \thinspace{}
-\end_inset
-
--
-\begin_inset space \thinspace{}
-\end_inset
-
-dt
-\begin_inset space \thinspace{}
-\end_inset
-
-*
-\begin_inset space \thinspace{}
-\end_inset
-
-(uxy
-\begin_inset space \thinspace{}
-\end_inset
-
-*
-\begin_inset space \thinspace{}
-\end_inset
-
-grad
-\begin_inset space \thinspace{}
-\end_inset
-
--
-\begin_inset space \thinspace{}
-\end_inset
-
-nu
-\begin_inset space \thinspace{}
-\end_inset
-
-*
-\begin_inset space \thinspace{}
-\end_inset
-
-Lapl)
-\family default
- and there now only 3 multiplications and 2 additions/subtractions.
-\begin_inset Newline newline
-\end_inset
-
-For 
-\family typewriter
-gcc
-\family default
- change had an improvement on 
-\family typewriter
--O0
-\family default
-.
- At 
-\family typewriter
--O1
-\family default
- and 
-\family typewriter
--O2
-\family default
- there was no improvement - the compiler should be using 
-\family typewriter
--ffast-math
-\family default
- to apply this automatically.
- Interestingly there was still a performance gain at 
-\family typewriter
--O3
-\family default
-.
- Evidently this helped the compiler determine a more optimal way of doing
- the calculation.
- This what not uniform across compilers, though.
- 
-\family typewriter
-clang
-\family default
- suffered a performance hit when this was applied, even at 
-\family typewriter
--O3
-\family default
-, as did 
-\family typewriter
-icc
-\family default
-.
-\end_layout
-
-\begin_layout Section
-Rejected Changes
-\end_layout
-
-\begin_layout Standard
-Some changes were made that did not result in a significant change of execution
- time, and were discarded.
- These are listed here.
-\end_layout
-
-\begin_layout Itemize
-Using pre- rather than post-increment operators.
- It is sometimes said (mostly for older machines) that the pre-increment
- operator (
-\family typewriter
-++x
-\family default
-) is more efficient than the post-increment operator (
-\family typewriter
-x++
-\family default
-).
- After changing all occurrences of this in the program, no change in execution
- time was measured.
-\end_layout
-
-\begin_layout Itemize
-\begin_inset CommandInset label
-LatexCommand label
-name "bad-2darray"
-
-\end_inset
-
-Using a flattened 2D array rather than a nested one.
- A flat 2D array implementation was trialled as follows:
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset listings
-inline false
-status open
-
-\begin_layout Plain Layout
-
-typedef struct {
-\end_layout
-
-\begin_layout Plain Layout
-
-	double* values;
-\end_layout
-
-\begin_layout Plain Layout
-
-	int n_rows;
-\end_layout
-
-\begin_layout Plain Layout
-
-	int n_cols;
-\end_layout
-
-\begin_layout Plain Layout
-
-} array2d_t;
-\end_layout
-
-\end_inset
-
-By flattening the array, rather than having nested arrays, the entire grid
- of values is spatially close.
- However, it was found that the overhead in accessing elements was not worth
- the gains in spatial locality.
- This overhead comes from the way that values are stored in the grid.
- To access the element at 
-\begin_inset Formula $i,j$
-\end_inset
-
- the program must compute 
-\begin_inset Formula $ix+j$
-\end_inset
-
- where 
-\begin_inset Formula $x$
-\end_inset
-
- is the number of rows, then dereference that offset.
- This is two operations followed by a pointer dereference.
- When using nested arrays, the program only has to perform two dereferences
- with no addition or multiplication, which is significantly faster.
-\end_layout
-
-\begin_layout Itemize
-Replacing 
-\family typewriter
-calloc
-\family default
- calls with 
-\family typewriter
-malloc
-\family default
-.
- 
-\family typewriter
-calloc
-\family default
- is slower since it takes time to initialise memory to zero values, however
- this was not measurable as memory allocation does not take a significant
- amount of time in this program.
- This change was rejected because the signature and semantics of 
-\family typewriter
-calloc
-\family default
- is preferred by the author.
- Furthermore, 
-\family typewriter
-calloc
-\family default
- may allocate more memory than requested to fit alignment requirements,
- which can be beneficial.
-\end_layout
-
-\begin_layout Itemize
-Manually applying an unroll-and-jam optimisation to mitigate pipeline stalls.
- This is handled automatically by the compiler at 
-\family typewriter
--O3
-\family default
-.
-\begin_inset Newpage pagebreak
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-\start_of_appendix
-Tables
 \end_layout
 
 \begin_layout Standard
@@ -1703,7 +1722,7 @@ Tables
 placement t
 wide true
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Tabular
@@ -4080,7 +4099,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.65
+0.72
 \end_layout
 
 \end_inset
@@ -4363,7 +4382,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.56
+0.55
 \end_layout
 
 \end_inset
@@ -4372,7 +4391,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.56
+0.55
 \end_layout
 
 \end_inset
@@ -4390,7 +4409,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.6
+1.5
 \end_layout
 
 \end_inset
@@ -4399,7 +4418,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.6
+1.5
 \end_layout
 
 \end_inset
@@ -4408,7 +4427,7 @@ noprefix "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.6
+1.5
 \end_layout
 
 \end_inset
@@ -4430,7 +4449,6 @@ name "tab:Average-execution-times"
 
 Average execution times for each compiler and optimisation level by change
  applied.
- Values are to two significant figures owing to clock precision.
  Values were measured on 
 \family typewriter
 stan1
@@ -4447,14 +4465,6 @@ stan1
 \end_inset
 
 
-\begin_inset Newpage pagebreak
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-Graphs
 \end_layout
 
 \begin_layout Standard
@@ -4616,6 +4626,260 @@ status collapsed
 
 \end_inset
 
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language={[x86masm]Assembler},float=h"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+.LBB2_13:                               #   Parent Loop BB2_5 Depth=1
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm1, ymmword ptr [rax + 8*rdi + 8]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm2, ymmword ptr [rdx + 8*rdi + 8]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm3, ymmword ptr [rsi + 8*rdi]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm4, ymmword ptr [rsi + 8*rdi + 8]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm5, ymmword ptr [rsi + 8*rdi + 16]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vbroadcastsd    ymm0, qword ptr [rip + .LCPI2_2] # ymm0 = [-4.0E+0,-4.0E+0,
+-4.0E+0,-4.0E+0]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovapd ymm6, ymm0
+\end_layout
+
+\begin_layout Plain Layout
+
+        vfmadd213pd     ymm6, ymm4, ymm1 # ymm6 = (ymm4 * ymm6) + ymm1
+\end_layout
+
+\begin_layout Plain Layout
+
+        vaddpd  ymm7, ymm2, ymm5
+\end_layout
+
+\begin_layout Plain Layout
+
+        vaddpd  ymm6, ymm6, ymm7
+\end_layout
+
+\begin_layout Plain Layout
+
+        vaddpd  ymm6, ymm6, ymm3
+\end_layout
+
+\begin_layout Plain Layout
+
+        vsubpd  ymm1, ymm1, ymm2
+\end_layout
+
+\begin_layout Plain Layout
+
+        vaddpd  ymm1, ymm1, ymm5
+\end_layout
+
+\begin_layout Plain Layout
+
+        vsubpd  ymm1, ymm1, ymm3
+\end_layout
+
+\begin_layout Plain Layout
+
+        vbroadcastsd    ymm2, qword ptr [rip + .LCPI2_9] # ymm2 = [-5.0E-1,-5.0E-1,
+-5.0E-1,-5.0E-1]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmulpd  ymm3, ymm4, ymm2
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmulpd  ymm3, ymm3, ymm1
+\end_layout
+
+\begin_layout Plain Layout
+
+        vbroadcastsd    ymm1, qword ptr [rip + .LCPI2_4] # ymm1 = [5.0E+0,5.0E+0,5.0
+E+0,5.0E+0]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vfmadd213pd     ymm6, ymm1, ymm3 # ymm6 = (ymm1 * ymm6) + ymm3
+\end_layout
+
+\begin_layout Plain Layout
+
+        vbroadcastsd    ymm3, qword ptr [rip + .LCPI2_5] # ymm3 = [1.0E-3,1.0E-3,1.0
+E-3,1.0E-3]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vfmadd213pd     ymm6, ymm3, ymm4 # ymm6 = (ymm3 * ymm6) + ymm4
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymmword ptr [rcx + 8*rdi + 8], ymm6
+\end_layout
+
+\begin_layout Plain Layout
+
+        cmp     rdi, 248
+\end_layout
+
+\begin_layout Plain Layout
+
+        je      .LBB2_14
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm4, ymmword ptr [rax + 8*rdi + 40]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm5, ymmword ptr [rdx + 8*rdi + 40]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm6, ymmword ptr [rsi + 8*rdi + 32]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm7, ymmword ptr [rsi + 8*rdi + 40]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymm8, ymmword ptr [rsi + 8*rdi + 48]
+\end_layout
+
+\begin_layout Plain Layout
+
+        vfmadd213pd     ymm0, ymm7, ymm4 # ymm0 = (ymm7 * ymm0) + ymm4
+\end_layout
+
+\begin_layout Plain Layout
+
+        vaddpd  ymm9, ymm8, ymm5
+\end_layout
+
+\begin_layout Plain Layout
+
+        vaddpd  ymm0, ymm9, ymm0
+\end_layout
+
+\begin_layout Plain Layout
+
+        vaddpd  ymm0, ymm0, ymm6
+\end_layout
+
+\begin_layout Plain Layout
+
+        vsubpd  ymm4, ymm4, ymm5
+\end_layout
+
+\begin_layout Plain Layout
+
+        vaddpd  ymm4, ymm8, ymm4
+\end_layout
+
+\begin_layout Plain Layout
+
+        vsubpd  ymm4, ymm4, ymm6
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmulpd  ymm2, ymm7, ymm2
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmulpd  ymm2, ymm2, ymm4
+\end_layout
+
+\begin_layout Plain Layout
+
+        vfmadd213pd     ymm1, ymm0, ymm2 # ymm1 = (ymm0 * ymm1) + ymm2
+\end_layout
+
+\begin_layout Plain Layout
+
+        vfmadd213pd     ymm3, ymm1, ymm7 # ymm3 = (ymm1 * ymm3) + ymm7
+\end_layout
+
+\begin_layout Plain Layout
+
+        vmovupd ymmword ptr [rcx + 8*rdi + 40], ymm3
+\end_layout
+
+\begin_layout Plain Layout
+
+        add     rdi, 8
+\end_layout
+
+\begin_layout Plain Layout
+
+        jmp     .LBB2_13
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:interior-loop"
+
+\end_inset
+
+Contents of the interior loop, when compiled with 
+\family typewriter
+-fverbose-asm -Wall -Wextra -Wpedantic -std=c99 -ffast-math -mavx2 -mavx
+ -march=native
+\family default
+.
+\end_layout
+
+\begin_layout Standard
 
 \end_layout
 
