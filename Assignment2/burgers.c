@@ -219,7 +219,7 @@ int main() {
                + (-2.0 * u00 + u01 + u0E) * inv_dy_sq; // bottom
         grad = (u10 - uE0) * half_inv_dx // left
                + (u01 - u0E) * half_inv_dy; // bottom
-        u_new[0][0] = u00 - dt * (u00 * grad + nu * Lapl);
+        u_new[0][0] = u00 - dt * (u00 * grad - nu * Lapl);
 
         // Bottom right
         // ix = Nx - 1, iy = 0
@@ -227,7 +227,7 @@ int main() {
                + (-2.0 * uE0 + uE1 + uEE) * inv_dy_sq;  // bottom
         grad = (u00 - ue0) * half_inv_dx // right
                + (uE1 - uEE) * half_inv_dy; // bottom
-        u_new[Nx - 1][0] = uE0 - dt * (uE0 * grad + nu * Lapl);
+        u_new[Nx - 1][0] = uE0 - dt * (uE0 * grad - nu * Lapl);
 
         // Top left
         // ix = 0, iy = Ny - 1
@@ -235,7 +235,7 @@ int main() {
                + (-2.0 * u0E + u00 + u0e) * inv_dy_sq; // top
         grad = (u1E - uEE) * half_inv_dx // left
                + (u00 - u0e) * half_inv_dx; // top
-        u_new[0][Ny - 1] = u0E - dt * (u0E * grad + nu * Lapl);
+        u_new[0][Ny - 1] = u0E - dt * (u0E * grad - nu * Lapl);
 
         // Top right
         // ix = Nx - 1, iy = Ny - 1
@@ -243,7 +243,7 @@ int main() {
                + (-2.0 * uEE + uE0 + u[Nx - 1][Ny - 1 - 1]) * inv_dy_sq; // top
         grad = (u0E - u[Nx - 1 - 1][Ny - 1]) * half_inv_dx + // right
                +(uE0 - u[Nx - 1][Ny - 1 - 1]) * half_inv_dx; // top
-        u_new[Nx - 1][Ny - 1] = uEE - dt * (uEE * grad + nu * Lapl);
+        u_new[Nx - 1][Ny - 1] = uEE - dt * (uEE * grad - nu * Lapl);
 
         // Edges
         // Along the edges, the periodic boundary condition applies in one direction.
@@ -265,14 +265,14 @@ int main() {
                    + (-2.0 * u0y + u0yp + u0ym) * inv_dy_sq; // varying y
             grad = (u1y - uEy) * half_inv_dx
                    + (u0yp - u0ym) * half_inv_dy;
-            u_new[0][iy] = u0y - dt * (u0y * grad + nu * Lapl);
+            u_new[0][iy] = u0y - dt * (u0y * grad - nu * Lapl);
 
             // Right side
             Lapl = (-2.0 * uEy + u0y + uey) * inv_dx_sq // right
                    + (-2.0 * uEy + uEyp + uEym) * inv_dy_sq; // varying y
             grad = (u0y - uey) * half_inv_dx
                    + (uEyp - uEym) * half_inv_dy;
-            u_new[Nx - 1][iy] = uEy - dt * (uEy * grad + nu * Lapl);
+            u_new[Nx - 1][iy] = uEy - dt * (uEy * grad - nu * Lapl);
         }
 
         // Bottom and top
