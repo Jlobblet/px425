@@ -71,3 +71,9 @@ cmake-build-relwithdebinfo-coverage/
 
 # Benchmark script
 Tools/**/benchmark-*.sh
+
+# Finished reports
+*.pdf
+
+# Assignment 2 graphs
+Assignment2/Graphs/*.png
