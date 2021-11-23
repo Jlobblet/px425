@@ -128,22 +128,25 @@ int main() {
                     // Randomly choose to form an edge
                     if (xi < Pcon) {
 
-                        // Increment edges involving i
-                        Ncon[i] = Ncon[i] + 1;
-                        // Increment edges involving j
-                        Ncon[j] = Ncon[j] + 1;
+#pragma omp critical
+                        {
+                            // Increment edges involving i
+                            Ncon[i] = Ncon[i] + 1;
+                            // Increment edges involving j
+                            Ncon[j] = Ncon[j] + 1;
 
-                        // Check that we will not overrun the end of the Lcon array
-                        if ((Ncon[i] > Maxcon - 1) || (Ncon[j] > Maxcon - 1)) {
-                            printf("Error generating random graph.\n");
-                            printf("Maximum number of edges per vertex exceeded!\n");
-                            exit(EXIT_FAILURE);
-                        }
+                            // Check that we will not overrun the end of the Lcon array
+                            if ((Ncon[i] > Maxcon - 1) || (Ncon[j] > Maxcon - 1)) {
+                                printf("Error generating random graph.\n");
+                                printf("Maximum number of edges per vertex exceeded!\n");
+                                exit(EXIT_FAILURE);
+                            }
 
-                        // j is connected to i
-                        Lcon[Maxcon * i + Ncon[i] - 1] = j;
-                        // i is connected to j
-                        Lcon[Maxcon * j + Ncon[j] - 1] = i;
+                            // j is connected to i
+                            Lcon[Maxcon * i + Ncon[i] - 1] = j;
+                            // i is connected to j
+                            Lcon[Maxcon * j + Ncon[j] - 1] = i;
+                        } // critical
 
                     } // if
                 } // j
