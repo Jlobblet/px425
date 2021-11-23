@@ -118,7 +118,7 @@ int main() {
             for (i = 0; i < Nvert; i++) { Ncon[i] = 0; } // Initialise num. connections
             for (i = 0; i < Nvert * Maxcon; i++) { Lcon[i] = -1; } // Initialise connection list
 
-#pragma omp parallel for default (none) shared(Nvert, Pcon, Ncon, Maxcon, Lcon) private(i, j, xi) schedule(static)
+#pragma omp parallel for default (none) shared(Nvert, Pcon, Ncon, Maxcon, Lcon) private(i, j, xi) schedule(static, Nvert/4)
             // Loop over vertices i
             for (i = 0; i < Nvert; i++) {
                 // Loop over other vertices j
