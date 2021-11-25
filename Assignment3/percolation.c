@@ -99,6 +99,7 @@ int main() {
         avnclus = 0.0;
 
         // Loop over graphs
+#pragma omp parallel for default(none) shared(Ngraphs, Nvert, Maxcon, Pcon) private(Ncon, Lcon, i,j, xi, lclus, nclus) reduction(+:avlclus, avnclus)
         for (igraph = 0; igraph < Ngraphs; igraph++) {
 
             // Allocate memory to hold graph connectivity
