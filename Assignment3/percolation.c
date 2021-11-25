@@ -164,6 +164,7 @@ int main() {
             free(Ncon);
         } // igraph
 
+#pragma omp ordered
         printf("Pcon = %12.4f Av. Num. Clusters. = %12.4f Av. Largest Cluster = %12.4f\n",
                Pcon, avnclus / (double) Ngraphs, avlclus / (double) Ngraphs);
 
