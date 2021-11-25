@@ -24,10 +24,10 @@ int main() {
     const long Nvert = 5000;
 
     // Number of graphs to average over at each Pcon
-    long Ngraphs = 1;
+    long Ngraphs = 20;
 
     // Number of Pcon values to test
-    long Np = 1;
+    long Np = 8;
 
     // Step incrementing probability of connecting any two vertices
     const double Pcon_step = 0.0004;
@@ -89,6 +89,7 @@ int main() {
 #endif
 
     // Loop over Pcon values
+#pragma omp parallel for default(none) private(Pcon, igraph, Ncon, Lcon, i, j, xi, lclus, nclus, avlclus, avnclus) shared(Np, Ngraphs, Nvert, Maxcon, Pcon_step)
     for (ip = 0; ip < Np; ip++) {
 
         // Compute Pcon from ip
