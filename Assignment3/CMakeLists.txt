@@ -24,4 +24,8 @@ if (OpenMP_C_FOUND)
     add_executable(assignment3.3omp percolation3.c mt19937ar.c cluster_search.f90)
     target_compile_options(assignment3.3omp PUBLIC ${CompileOptions} ${OpenMP_C_FLAGS})
     target_link_libraries(assignment3.3omp ${Libraries} OpenMP::OpenMP_C)
+
+    add_executable(assignment3.4omp percolation4.c mt19937ar.c cluster_search.f90)
+    target_compile_options(assignment3.4omp PUBLIC ${CompileOptions} ${OpenMP_C_FLAGS})
+    target_link_libraries(assignment3.4omp ${Libraries} OpenMP::OpenMP_C)
 endif()
