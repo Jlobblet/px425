@@ -103,7 +103,7 @@ int main() {
 
 
     // Loop over Pcon values
-#pragma omp parallel for ordered default(none) shared(Np, Pcon_step, Ngraphs, Nvert, Maxcon, results) private(Pcon, avlclus, avnclus)
+#pragma omp parallel for default(none) shared(Np, Pcon_step, Ngraphs, Nvert, Maxcon, results) private(Pcon, avlclus, avnclus)
     for (ip = 0; ip < Np; ip++) {
 
         // Compute Pcon from ip
@@ -114,7 +114,7 @@ int main() {
         avnclus = 0.0;
 
         // Loop over graphs
-#pragma omp parallel for  default(none) shared(Ngraphs, Nvert, Maxcon, Pcon) private(Ncon, Lcon, i, j, xi, lclus, nclus) reduction(+:avlclus, avnclus)
+#pragma omp parallel for default(none) shared(Ngraphs, Nvert, Maxcon, Pcon) private(Ncon, Lcon, i, j, xi, lclus, nclus) reduction(+:avlclus, avnclus)
         for (igraph = 0; igraph < Ngraphs; igraph++) {
 
             // Allocate memory to hold graph connectivity
