@@ -4,11 +4,11 @@
 
 # C compiler and flags
 CC=gcc
-CFLAGS=-O3 
+CFLAGS=-O3 -fopenmp -Wall -Wextra -Wpedantic
 
 # Fortran compiler and flags
 F90=gfortran
-FFLAGS=-O3 
+FFLAGS=-O3 -fopenmp
 
 # Command to use for linking and executable
 LD=gcc
