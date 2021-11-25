@@ -89,7 +89,7 @@ int main() {
 #endif
 
     // Loop over Pcon values
-#pragma omp parallel for default(none) private(Pcon, igraph, Ncon, Lcon, i, j, xi, lclus, nclus, avlclus, avnclus) shared(Np, Ngraphs, Nvert, Maxcon, Pcon_step)
+#pragma omp parallel for ordered default(none) private(Pcon, igraph, Ncon, Lcon, i, j, xi, lclus, nclus, avlclus, avnclus) shared(Np, Ngraphs, Nvert, Maxcon, Pcon_step)
     for (ip = 0; ip < Np; ip++) {
 
         // Compute Pcon from ip
