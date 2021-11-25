@@ -24,10 +24,10 @@ int main() {
     const long Nvert = 5000;
 
     // Number of graphs to average over at each Pcon
-    long Ngraphs = 1;
+    long Ngraphs = 20;
 
     // Number of Pcon values to test
-    long Np = 1;
+    long Np = 8;
 
     // Step incrementing probability of connecting any two vertices
     const double Pcon_step = 0.0004;
