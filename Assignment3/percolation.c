@@ -18,6 +18,12 @@ find_clusters_recursive(long Nvert, long Maxcon, long* Ncon, long* Lcon, long* l
 __attribute__((unused)) void
 find_clusters_eqclass(long Nvert, long Maxcon, long* Ncon, long* Lcon, long* lclus, long* nclus);
 
+typedef struct {
+    double Pcon;
+    double AvClus;
+    double MaxClus;
+} ResultStruct;
+
 int main() {
 
     // Number of vertices
@@ -88,7 +94,16 @@ int main() {
     t_start = omp_get_wtime();
 #endif
 
+    // Arrays for storing results
+    ResultStruct* results = (ResultStruct*) calloc(Np, sizeof(ResultStruct));
+    if (results == NULL) {
+        fprintf(stderr, "Error allocating Results.\n");
+        exit(EXIT_FAILURE);
+    }
+
+
     // Loop over Pcon values
+#pragma omp parallel for ordered default(none) shared(Np, Pcon_step, Ngraphs, Nvert, Maxcon, results) private(Pcon, avlclus, avnclus)
     for (ip = 0; ip < Np; ip++) {
 
         // Compute Pcon from ip
@@ -99,17 +114,17 @@ int main() {
         avnclus = 0.0;
 
         // Loop over graphs
-#pragma omp parallel for default(none) shared(Ngraphs, Nvert, Maxcon, Pcon) private(Ncon, Lcon, i,j, xi, lclus, nclus) reduction(+:avlclus, avnclus)
+#pragma omp parallel for  default(none) shared(Ngraphs, Nvert, Maxcon, Pcon) private(Ncon, Lcon, i, j, xi, lclus, nclus) reduction(+:avlclus, avnclus)
         for (igraph = 0; igraph < Ngraphs; igraph++) {
 
             // Allocate memory to hold graph connectivity
-            Ncon = (long*) calloc(sizeof(long), Nvert);
+            Ncon = (long*) calloc(Nvert, sizeof(long));
             if (Ncon == NULL) {
                 printf("Error allocating Ncon array\n");
                 exit(EXIT_FAILURE);
             }
 
-            Lcon = (long*) calloc(sizeof(long), Nvert * Maxcon);
+            Lcon = (long*) calloc(Nvert * Maxcon, sizeof(long));
             if (Lcon == NULL) {
                 printf("Error allocating Lcon array\n");
                 exit(EXIT_FAILURE);
@@ -148,8 +163,6 @@ int main() {
                 } // j
             } // i
 
-
-
             // Identify the clusters through a recusive search over edges /
             // find_clusters_recursive(Nvert,Maxcon,Ncon,Lcon,&lclus,&nclus);
 
@@ -164,11 +177,20 @@ int main() {
             free(Ncon);
         } // igraph
 
-        printf("Pcon = %12.4f Av. Num. Clusters. = %12.4f Av. Largest Cluster = %12.4f\n",
-               Pcon, avnclus / (double) Ngraphs, avlclus / (double) Ngraphs);
+        ResultStruct r = {
+                .Pcon = Pcon,
+                .AvClus = avnclus / (double) Ngraphs,
+                .MaxClus = avlclus / (double) Ngraphs,
+        };
+        results[ip] = r;
 
     } // end loop over ip
 
+    for (ip = 0; ip < Np; ip++) {
+        printf("Pcon = %12.4f Av. Num. Clusters. = %12.4f Av. Largest Cluster = %12.4f\n",
+               results[ip].Pcon, results[ip].AvClus, results[ip].MaxClus);
+    }
+    free(results);
 
     // Check timer
 #ifndef _OPENMP
