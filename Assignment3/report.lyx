@@ -222,23 +222,7 @@ Nvert
 \family typewriter
 145
 \family default
-In 
-\family typewriter
-percolation1.c
-\family default
- these are lines 
-\family typewriter
-136
-\family default
-, 
-\family typewriter
-139
-\family default
-, and 
-\family typewriter
-148
-\family default
- respectively.
+
 \begin_inset Foot
 status collapsed
 
