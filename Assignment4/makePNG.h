@@ -5,5 +5,6 @@
 /  (based on previous code by D. Quigley)                  /
 /=========================================================*/
 /* Function prototypes */
-void writepng(char *filename, int **grid, int width, int height);
-void bork(char *msg,...);
+void writepng(char* filename, int** grid, int width, int height);
+
+void bork(char* msg, ...);

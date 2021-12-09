@@ -19,10 +19,15 @@ extern int my_rank_neighbours[4];
 
 
 /* Function prototypes */
-void comms_initialise(int argc, char **argv);
+void comms_initialise(int argc, char** argv);
+
 void comms_processor_map();
-void comms_get_global_mag(double local_mag,double *global_mag);
+
+void comms_get_global_mag(double local_mag, double* global_mag);
+
 void comms_halo_swaps();
+
 void comms_get_global_grid();
+
 void comms_finalise();
 
