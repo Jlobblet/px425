@@ -36,15 +36,12 @@ void comms_initialise(int argc, char** argv) {
     // square root of p
     int proot;
 
-    // Remove these lines once you have added calls to initialise MPI
-    // and to retreive my_rank and p, the number of processors
-    p = 1;
-    my_rank = 0;
-
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &p);
 
     // Start the timer. Set t1 using MPI_Wtime() which returns a double
-
-
+    t1 = MPI_Wtime();
 
     // Check that we have a square number of processors
     proot = (int) sqrt((double) p + 0.5);
@@ -293,14 +290,12 @@ void comms_get_global_grid() {
 /// Function to finalise MPI functionality and exit cleanly
 /// N. Hine (based on code by D. Quigley) - University of Warwick
 void comms_finalise() {
-    // Remove the following line when you have inserted appropriate MPI calls below
-    return;
-
     // Measure the time t2 using MPI_Wtime() which returns a double
+    t2 = MPI_Wtime();
 
     if (my_rank == 0 && p > 1) {
         printf("Total time elapsed since MPI initialised :  %12.6f s\n", t2 - t1);
     }
 
-    // Shutdown MPI - insert appropriate call here
+    MPI_Finalize();
 }
