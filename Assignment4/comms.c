@@ -68,6 +68,7 @@ void comms_processor_map() {
     int reorder = 0;
     int pbc[2] = {1, 1};
     int dims[2];
+    int my_cart_rank;
 
     // Local variables
     // square root of p
@@ -79,18 +80,22 @@ void comms_processor_map() {
     dims[x] = proot;
     dims[y] = proot;
 
-    // Remove these lines when you have added appropriate MPI calls to
-    // create a Cartesian communicator from MPI_COMM_WORLD, stored the
-    // coordinates of the current MPI task in my_rank_coords, and set
-    // the array my_rank_neighbours to hold the tank of neighbouring
-    // tasks in the directions left, right, down and up.
-    my_rank_coords[x] = 0;
-    my_rank_coords[y] = 0;
+    MPI_Cart_create(MPI_COMM_WORLD, ndims, dims, pbc, reorder, &cart_comm);
+    MPI_Comm_rank(cart_comm, &my_cart_rank);
+    MPI_Cart_coords(cart_comm, my_cart_rank, 2, my_rank_coords);
 
-    my_rank_neighbours[left] = 0;
-    my_rank_neighbours[right] = 0;
-    my_rank_neighbours[down] = 0;
-    my_rank_neighbours[up] = 0;
+    int coords[2] = {my_rank_coords[0] - 1, my_rank_coords[1]};
+    MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[left]);
+
+    coords[0] = my_rank_coords[0] + 1;
+    MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[right]);
+
+    coords[0] = my_rank_coords[0];
+    coords[1] = my_rank_coords[1] - 1;
+    MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[down]);
+
+    coords[1] = my_rank_coords[1] + 1;
+    MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[up]);
 }
 
 /// Function to compute the glocal magnetisation of the grid by
@@ -284,7 +289,6 @@ void comms_get_global_grid() {
 
     free(combuff);
 }
-
 
 
 /// Function to finalise MPI functionality and exit cleanly
