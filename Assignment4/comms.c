@@ -103,7 +103,8 @@ void comms_processor_map() {
            "Up            : %d\n"
            "Down          : %d\n"
            "Left          : %d\n"
-           "Right         : %d\n",
+           "Right         : %d\n"
+           "\n",
            my_cart_rank,
            my_rank_coords[0],
            my_rank_coords[1],
