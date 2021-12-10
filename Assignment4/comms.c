@@ -106,10 +106,11 @@ void comms_processor_map() {
 void comms_get_global_mag(double local_mag, double* global_mag) {
     // This is only correct on one processor. You will need
     // to use a collective communication routine to correct this.
-    *global_mag = local_mag;
+//    *global_mag = local_mag;
 
 
     // Insert collective communication operation here
+    MPI_Allreduce(&local_mag, global_mag, 1, MPI_DOUBLE, MPI_SUM, cart_comm);
 
 
     *global_mag = *global_mag / (double) p;
