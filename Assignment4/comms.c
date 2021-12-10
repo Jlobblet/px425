@@ -85,17 +85,17 @@ void comms_processor_map() {
     MPI_Comm_rank(cart_comm, &my_cart_rank);
     MPI_Cart_coords(cart_comm, my_cart_rank, 2, my_rank_coords);
 
-    int coords[2] = {my_rank_coords[0] , my_rank_coords[1] - 1};
+    int coords[2] = {my_rank_coords[0] - 1 , my_rank_coords[1]};
     MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[left]);
 
-    coords[1] = my_rank_coords[1] + 1;
+    coords[0] = my_rank_coords[0] + 1;
     MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[right]);
 
-    coords[0] = my_rank_coords[0] + 1;
-    coords[1] = my_rank_coords[1];
+    coords[0] = my_rank_coords[0];
+    coords[1] = my_rank_coords[1] - 1;
     MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[down]);
 
-    coords[0] = my_rank_coords[0] - 1;
+    coords[1] = my_rank_coords[1] + 1;
     MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[up]);
 
     printf("My rank       : %d\n"
@@ -176,48 +176,40 @@ void comms_halo_swaps() {
         exit(EXIT_FAILURE);
     }
 
-    // Send left hand boundary elements of grid_spin to my_rank_neighbours[left]
-    // and receive from my_rank_neighbours[right] into the appropriate part
-    // of grid_halo. Remember to use the appropriate communicator.
     // SASHAY LEFT
     for (iy = 0; iy < grid_domain_size; iy++) {
         // Copy the left-hand elements into sendbuf
         sendbuf[iy] = grid_spin[iy][0];
     }
-    MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], left, cart_comm);
-    MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], left, cart_comm, &status);
+    MPI_Sendrecv(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], left,
+                 recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], left,
+                 cart_comm, &status);
     // Copy recvbuf into the right-hand elements
     memcpy(grid_halo[right], recvbuf, grid_domain_size * sizeof(int));
 
-    // Send right hand boundary elements of grid_spin to my_rank_neighbours[right]
-    // and receive from my_rank_neighbours[left] into the appropriate part
-    // of grid_halo. Remember to use the appropriate communicator.
     // SHIMMY RIGHT
     for (iy = 0; iy < grid_domain_size; iy++) {
         // Copy the right-hand elements into sendbuf
         sendbuf[iy] = grid_spin[iy][grid_domain_size - 1];
     }
-    MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], right, cart_comm);
-    MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], right, cart_comm, &status);
+    MPI_Sendrecv(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], right,
+                 recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], right,
+                 cart_comm, &status);
     memcpy(grid_halo[left], recvbuf, grid_domain_size * sizeof(int));
 
-    // Send bottom boundary elements of grid_spin to my_rank_neighbours[down]
-    // and receive from my_rank_neighbours[up] into the appropriate part
-    // of grid halo. Remember to use the appropriate communicator.
     // PRANCE FORWARD
     // Since the grid is stored this way around, can memcpy it.
     memcpy(sendbuf, grid_spin[0], grid_domain_size * sizeof(int));
-    MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], up, cart_comm);
-    MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], up, cart_comm, &status);
+    MPI_Sendrecv(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], down,
+                 recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], down,
+                 cart_comm, &status);
     memcpy(grid_halo[up], recvbuf, grid_domain_size * sizeof(int));
 
-    // Send top boundary elements of grid_spin to my_rank_neighbours[up]
-    // and receive from my_rank_neighbours[down] into the appropriate part
-    // of grid halo. Remember to use the appropriate communicator.
     // BOOGIE DOWN
     memcpy(sendbuf, grid_spin[grid_domain_size - 1], grid_domain_size * sizeof(int));
-    MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], down, cart_comm);
-    MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], down, cart_comm, &status);
+    MPI_Sendrecv(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], up,
+                 recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], up,
+                 cart_comm, &status);
     memcpy(grid_halo[down], recvbuf, grid_domain_size * sizeof(int));
 
     // Release memory
