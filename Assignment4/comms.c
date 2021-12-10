@@ -282,13 +282,13 @@ void comms_get_global_grid() {
         for (ip = 1; ip < p; ip++) {
 
             // First receive remote_domain_start from rank ip
-            MPI_Recv(remote_domain_start, 2, MPI_INT, ip, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            MPI_Recv(remote_domain_start, 2, MPI_INT, ip, MPI_ANY_TAG, cart_comm, &status);
 
             // Loop over rows within a domain
             for (iy = 0; iy < grid_domain_size; iy++) {
 
                 // Receive this row from rank ip
-                MPI_Recv(combuff, grid_domain_size, MPI_INT, ip, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+                MPI_Recv(combuff, grid_domain_size, MPI_INT, ip, MPI_ANY_TAG, cart_comm, &status);
 
                 for (ix = 0; ix < grid_domain_size; ix++) {
                     // Global indices
@@ -304,12 +304,12 @@ void comms_get_global_grid() {
     } else {
         // All other processors must send the data rank 0 needs
         // Send grid_domain_start to rank 0
-        MPI_Send(grid_domain_start, 2, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(grid_domain_start, 2, MPI_INT, 0, 0, cart_comm);
 
         // Loop over rows in the domain, sending them to rank 0
         for (iy = 0; iy < grid_domain_size; iy++) {
             memcpy(combuff, grid_spin[iy], grid_domain_size * sizeof(int));
-            MPI_Send(combuff, grid_domain_size, MPI_INT, 0, 0, MPI_COMM_WORLD);
+            MPI_Send(combuff, grid_domain_size, MPI_INT, 0, 0, cart_comm);
         }
     }
 
