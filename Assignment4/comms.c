@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <memory.h>
 #include "comms.h"
 
 // Number of processors
@@ -162,29 +163,51 @@ void comms_halo_swaps() {
     // Send left hand boundary elements of grid_spin to my_rank_neighbours[left]
     // and receive from my_rank_neighbours[right] into the appropriate part
     // of grid_halo. Remember to use the appropriate communicator.
-
-
-    // Insert MPI calls here to implement this swap. Use sendbuf and recvbuf
-
+    // SASHAY LEFT
+    for (iy = 0; iy < grid_domain_size; iy++) {
+        // Copy the left-hand elements into sendbuf
+        sendbuf[iy] = grid_spin[iy][0];
+    }
+    MPI_Bsend(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], MPI_ANY_TAG, cart_comm);
+    MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], MPI_ANY_TAG, cart_comm, &status);
+    for (iy = 0; iy < grid_domain_size; iy++) {
+        // Copy recvbuf into the right-hand elements
+        grid_spin[iy][grid_domain_size - 1] = recvbuf[iy];
+    }
 
     // Send right hand boundary elements of grid_spin to my_rank_neighbours[right]
     // and receive from my_rank_neighbours[left] into the appropriate part
     // of grid_halo. Remember to use the appropriate communicator.
-
-    // Insert MPI calls here to implement this swap. Use sendbuf and recvbuf
-
+    // SHIMMY RIGHT
+    for (iy = 0; iy < grid_domain_size; iy++) {
+        // Copy the right-hand elements into sendbuf
+        sendbuf[iy] = grid_spin[iy][grid_domain_size - 1];
+    }
+    MPI_Bsend(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], MPI_ANY_TAG, cart_comm);
+    MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], MPI_ANY_TAG, cart_comm, &status);
+    for (iy = 0; iy < grid_domain_size; iy++) {
+        // Copy recvbuf into the left-hand elements
+        grid_spin[iy][0] = recvbuf[iy];
+    }
 
     // Send bottom boundary elements of grid_spin to my_rank_neighbours[down]
     // and receive from my_rank_neighbours[up] into the appropriate part
     // of grid halo. Remember to use the appropriate communicator.
-
-    // Insert MPI calls here to implement this swap. Use sendbuf and recvbuf
+    // PRANCE FORWARD
+    // Since the grid is stored this way around, can memcpy it.
+    memcpy(sendbuf, grid_spin[0], grid_domain_size * sizeof(int));
+    MPI_Bsend(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], MPI_ANY_TAG, cart_comm);
+    MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], MPI_ANY_TAG, cart_comm, &status);
+    memcpy(grid_spin[grid_domain_size - 1], recvbuf, grid_domain_size * sizeof(int));
 
     // Send top boundary elements of grid_spin to my_rank_neighbours[up]
     // and receive from my_rank_neighbours[down] into the appropriate part
     // of grid halo. Remember to use the appropriate communicator.
-
-    // Insert MPI call or calls here to implement this swap. Use sendbuf and recvbuf
+    // BOOGIE DOWN
+    memcpy(sendbuf, grid_spin[grid_domain_size - 1], grid_domain_size * sizeof(int));
+    MPI_Bsend(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], MPI_ANY_TAG, cart_comm);
+    MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], MPI_ANY_TAG, cart_comm, &status);
+    memcpy(grid_spin[0], recvbuf, grid_domain_size * sizeof(int));
 
     // Release memory
     free(sendbuf);
