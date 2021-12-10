@@ -91,11 +91,11 @@ void comms_processor_map() {
     coords[1] = my_rank_coords[1] + 1;
     MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[right]);
 
-    coords[0] = my_rank_coords[0] - 1;
+    coords[0] = my_rank_coords[0] + 1;
     coords[1] = my_rank_coords[1];
     MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[down]);
 
-    coords[0] = my_rank_coords[0] + 1;
+    coords[0] = my_rank_coords[0] - 1;
     MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[up]);
 
     printf("My rank       : %d\n"
