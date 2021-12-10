@@ -77,3 +77,6 @@ Tools/**/benchmark-*.sh
 
 # Assignment 2 graphs
 Assignment2/Graphs/*.png
+
+# Zipped submissions
+*.zip
