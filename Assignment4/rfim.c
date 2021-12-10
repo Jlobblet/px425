@@ -216,12 +216,12 @@ int main(int argc, char** argv) {
             comms_get_global_grid();
 
             /* Call function to write the global grid on rank zero only */
-//            sprintf(filename, "snapshot%08d.png", icyc);
-//            if (my_rank == 0) {
-//
-//                writepng(filename, global_grid_spin, Ngrid, Ngrid);
-//
-//            }
+            sprintf(filename, "snapshot%08d.png", icyc);
+            if (my_rank == 0) {
+
+                writepng(filename, global_grid_spin, Ngrid, Ngrid);
+
+            }
 
         }
 
