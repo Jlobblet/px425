@@ -187,7 +187,7 @@ void comms_halo_swaps() {
     MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], left, cart_comm);
     MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], left, cart_comm, &status);
     // Copy recvbuf into the right-hand elements
-    memcpy(grid_halo[right], recvbuf, grid_domain_size * sizeof(int));
+    memcpy(grid_halo[left], recvbuf, grid_domain_size * sizeof(int));
 
     // Send right hand boundary elements of grid_spin to my_rank_neighbours[right]
     // and receive from my_rank_neighbours[left] into the appropriate part
@@ -199,7 +199,7 @@ void comms_halo_swaps() {
     }
     MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], right, cart_comm);
     MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], right, cart_comm, &status);
-    memcpy(grid_halo[left], recvbuf, grid_domain_size * sizeof(int));
+    memcpy(grid_halo[right], recvbuf, grid_domain_size * sizeof(int));
 
     // Send bottom boundary elements of grid_spin to my_rank_neighbours[down]
     // and receive from my_rank_neighbours[up] into the appropriate part
@@ -209,7 +209,7 @@ void comms_halo_swaps() {
     memcpy(sendbuf, grid_spin[0], grid_domain_size * sizeof(int));
     MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], up, cart_comm);
     MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], up, cart_comm, &status);
-    memcpy(grid_halo[up], recvbuf, grid_domain_size * sizeof(int));
+    memcpy(grid_halo[down], recvbuf, grid_domain_size * sizeof(int));
 
     // Send top boundary elements of grid_spin to my_rank_neighbours[up]
     // and receive from my_rank_neighbours[down] into the appropriate part
@@ -218,7 +218,7 @@ void comms_halo_swaps() {
     memcpy(sendbuf, grid_spin[grid_domain_size - 1], grid_domain_size * sizeof(int));
     MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], down, cart_comm);
     MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], down, cart_comm, &status);
-    memcpy(grid_halo[down], recvbuf, grid_domain_size * sizeof(int));
+    memcpy(grid_halo[up], recvbuf, grid_domain_size * sizeof(int));
 
     // Release memory
     free(sendbuf);
