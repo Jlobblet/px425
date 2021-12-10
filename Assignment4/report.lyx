@@ -1,0 +1,1921 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass revtex4-2
+\options reprint, aps, onecolumn
+\use_default_options false
+\begin_modules
+subequations
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures false
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command bibtex
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks true
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize letterpaper
+\use_geometry false
+\use_package amsmath 2
+\use_package amssymb 2
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine natbib
+\cite_engine_type numerical
+\biblio_style plainnat
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+PX425 Assignment 4
+\end_layout
+
+\begin_layout Author
+
+\family typewriter
+phuwcs
+\family default
+ (
+\family typewriter
+1833194
+\family default
+)
+\end_layout
+
+\begin_layout Affiliation
+Department of Physics, University of Warwick
+\end_layout
+
+\begin_layout Date
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+today
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+Parallelise a program using a Cartesian domain decomposition with MPI.
+\end_layout
+
+\begin_layout Abstract
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Getting MPI up and running
+\end_layout
+
+\begin_layout Standard
+To get MPI up and running I followed the instructions in the script.
+ This image 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "fig:first-run"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ was saved from the first successful run.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename report_images/initial_run.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:first-run"
+
+\end_inset
+
+The final snapshot after MPI was first set up.
+ Only the bottom left quarter of the image (coordinates 0, 0) is shown.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Sharing the work - setting up a Cartesian topology
+\end_layout
+
+\begin_layout Standard
+I used 
+\family typewriter
+MPI_Cart_create
+\family default
+ to create a Cartesian topology as expected.
+ I also stored the process's current rank in the Cartesian communicator
+ for this step, in case it was reordered from the world rank.
+ While 
+\family typewriter
+reorder
+\family default
+ is currently set to 
+\family typewriter
+0
+\family default
+, I thought this would be more resilient if it needed to be change.
+ With the rank within the communicator at hand, the coordinates of the current
+ rank are available via 
+\family typewriter
+MPI_Cart_coords
+\family default
+.
+ The ranks of the neighbours could be found easily enough with 
+\family typewriter
+MPI_Cart_rank
+\family default
+ after that.
+ Outputs of the print statements are shown below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+With 1 processor:
+\end_layout
+
+\begin_layout Plain Layout
+
+Size of each local processor grid :   480 x   480
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 0 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+With 4 processors:
+\end_layout
+
+\begin_layout Plain Layout
+
+Size of each local processor grid :   240 x   240
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 0 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 0 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 1 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 1 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+With 9 processors:
+\end_layout
+
+\begin_layout Plain Layout
+
+Size of each local processor grid :   160 x   160
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 0 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 6
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 0 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 7
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 4
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 0 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 8
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 5
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 1 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 4
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 5
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 6
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 4
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 1 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 5
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 7
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 5
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 1 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 4
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 8
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 6
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 2 0
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 7
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 8
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 3
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 0
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 7
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 2 1
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 8
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 6
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 4
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 1
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+My rank       : 8
+\end_layout
+
+\begin_layout Plain Layout
+
+My coordinates: 2 2
+\end_layout
+
+\begin_layout Plain Layout
+
+Up            : 6
+\end_layout
+
+\begin_layout Plain Layout
+
+Down          : 7
+\end_layout
+
+\begin_layout Plain Layout
+
+Left          : 5
+\end_layout
+
+\begin_layout Plain Layout
+
+Right         : 2
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+With a quick sketch I was able to convince myself that this was correct.
+\end_layout
+
+\begin_layout Section
+Collecting data from all processors
+\end_layout
+
+\begin_layout Standard
+When editing 
+\family typewriter
+comms_get_global_grid
+\family default
+, in order to ensure that data from ranks cannot be confused, I specified
+ the source and desination rank explicitly in 
+\family typewriter
+MPI_Send
+\family default
+ and 
+\family typewriter
+MPI_Recv
+\family default
+.
+\end_layout
+
+\begin_layout Standard
+For 
+\family typewriter
+comms_get_global_mag
+\family default
+, an 
+\family typewriter
+MPI_Allreduce
+\family default
+ with 
+\family typewriter
+MPI_SUM
+\family default
+ was appropriate to add up all the local magnisation values.
+ The code already in the function then divided by the number of processors
+ to get the average.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "fig:collecting-data"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the final results from this step with four processors.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename report_images/all_data.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:collecting-data"
+
+\end_inset
+
+Final results after collecting data from all processors.
+ The borders between the four quadrants are evidence of the number of processors
+ and lack of halo swapping to correctly evolve the system over time.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Halo swapping
+\end_layout
+
+\begin_layout Standard
+This step was a bit fiddly and took a bit of time to get correct.
+ In particular, matching 
+\begin_inset Quotes eld
+\end_inset
+
+left
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+right
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+up
+\begin_inset Quotes erd
+\end_inset
+
+, and 
+\begin_inset Quotes eld
+\end_inset
+
+down
+\begin_inset Quotes erd
+\end_inset
+
+ to the coordinate system required careful thought.
+ I used 
+\family typewriter
+MPI_Sendrecv
+\family default
+ since the ranks would be sending and receiving data simultaneously, with
+ source and destination ranks set as well as a specific tag for each direction.
+ This ensured that no data would be sent to the wrong place.
+ Where possible I also used 
+\family typewriter
+memcpy
+\family default
+ to copy to and from 
+\family typewriter
+sendbuf
+\family default
+ and 
+\family typewriter
+recvbuf
+\family default
+.
+ After a few failed attempts, a good looking result popped out: 
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "fig:halo-swapping"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename report_images/halo_swapped.png
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:halo-swapping"
+
+\end_inset
+
+Final data after halo swapping was correctly implemented, with four processors.
+ There are no obvious lines through the middle of the data and the edges
+ also correctly obey periodic boundary conditions.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Timings
+\end_layout
+
+\begin_layout Standard
+Table 
+\begin_inset CommandInset ref
+LatexCommand vref
+reference "tab:timings"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ shows the timings recorded from the various configurations required.
+ The larger the size of the grid, the slower the simulation runs.
+ The more processors, the faster the simulation runs.
+ The effect that the number of processors has decreases the more processors
+ there are.
+ The grid works the opposite way, with each larger size slowing the overall
+ simulation down more and more (since the total number of points is 
+\begin_inset Formula $N_{\mathrm{grid}}^{2}$
+\end_inset
+
+).
+ I didn't notice anything especially unusual about these results.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="21" columns="4">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+Ngrid
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+P
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Time / s
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\psi(N)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="3" alignment="center" valignment="middle" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+480
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+14.5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.50
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.14
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.43
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.787
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+18.4
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+25
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.560
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+25.9
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="3" alignment="center" valignment="middle" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+600
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+31.9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5.94
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5.37
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.38
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+13.4
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.26
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+25.3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+25
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.837
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+38.1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="3" alignment="center" valignment="middle" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+720
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+51.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11.4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.49
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.76
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+13.6
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.90
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+26.9
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+25
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.64
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+31.2
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="3" alignment="center" valignment="middle" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+840
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+75.0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+16.9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.44
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6.19
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+12.1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.78
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+27.0
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell multirow="4" alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+25
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.20
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+34.1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:timings"
+
+\end_inset
+
+Time taken to execute the simulation as measured by 
+\family typewriter
+MPI_Wtime
+\family default
+.
+ 
+\begin_inset Formula $\psi(N)=\frac{T(1)}{T(P)}$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement p
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename report_images/final_image.png
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Final image with 
+\family typewriter
+Ngrid=480
+\family default
+ and 
+\family typewriter
+P=9
+\family default
+, attached as 
+\family typewriter
+image.png
+\family default
+.
+ Note that the precise pattern is different to figure 
+\begin_inset CommandInset ref
+LatexCommand vref
+reference "fig:halo-swapping"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ because of the random number generator generating different numbers for
+ each process, so as 
+\family typewriter
+P
+\family default
+ varies so will the final outcome.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
