@@ -293,6 +293,7 @@ void comms_get_global_grid() {
 
         // Loop over rows in the domain, sending them to rank 0
         for (iy = 0; iy < grid_domain_size; iy++) {
+            memcpy(combuff, grid_spin[iy], grid_domain_size * sizeof(int));
             MPI_Send(combuff, grid_domain_size, MPI_INT, 0, 0, MPI_COMM_WORLD);
         }
     }
