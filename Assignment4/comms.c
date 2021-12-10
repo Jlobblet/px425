@@ -97,6 +97,21 @@ void comms_processor_map() {
 
     coords[0] = my_rank_coords[0] + 1;
     MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[up]);
+
+    printf("My rank       : %d\n"
+           "My coordinates: %d %d\n"
+           "Up            : %d\n"
+           "Down          : %d\n"
+           "Left          : %d\n"
+           "Right         : %d\n",
+           my_cart_rank,
+           my_rank_coords[0],
+           my_rank_coords[1],
+           my_rank_neighbours[up],
+           my_rank_neighbours[down],
+           my_rank_neighbours[left],
+           my_rank_neighbours[right]
+           );
 }
 
 /// Function to compute the glocal magnetisation of the grid by
