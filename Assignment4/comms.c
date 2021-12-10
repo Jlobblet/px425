@@ -230,10 +230,6 @@ void comms_get_global_grid() {
         }
     }
 
-
-    // Remove the following line when you have inserted appropriate MPI calls below
-    return;
-
     // Allocate buffer
     combuff = (int*) malloc(grid_domain_size * sizeof(int));
     if (combuff == NULL) {
@@ -247,18 +243,15 @@ void comms_get_global_grid() {
         for (ip = 1; ip < p; ip++) {
 
             // First receive remote_domain_start from rank ip
-            // Insert an appropriate MPI call here
-
+            MPI_Recv(remote_domain_start, 2, MPI_INT, ip, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
             // Loop over rows within a domain
             for (iy = 0; iy < grid_domain_size; iy++) {
 
                 // Receive this row from rank ip
-                // Insert appropriate MPI call here
-
+                MPI_Recv(combuff, grid_domain_size, MPI_INT, ip, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
                 for (ix = 0; ix < grid_domain_size; ix++) {
-
                     // Global indices
                     ixg = ix + remote_domain_start[x];
                     iyg = iy + remote_domain_start[y];
@@ -270,21 +263,14 @@ void comms_get_global_grid() {
         } // processors
 
     } else {
-
         // All other processors must send the data rank 0 needs
-
         // Send grid_domain_start to rank 0
-        // Insert appropriate MPI call here
+        MPI_Send(grid_domain_start, 2, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD);
 
         // Loop over rows in the domain, sending them to rank 0
         for (iy = 0; iy < grid_domain_size; iy++) {
-
-            // Insert appropriate MPI call here
-
-
-
+            MPI_Send(combuff, grid_domain_size, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD);
         }
-
     }
 
     free(combuff);
