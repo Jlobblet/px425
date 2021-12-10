@@ -182,7 +182,7 @@ void comms_halo_swaps() {
     // SASHAY LEFT
     for (iy = 0; iy < grid_domain_size; iy++) {
         // Copy the left-hand elements into sendbuf
-        sendbuf[iy] = grid_spin[iy][grid_domain_size - 1];
+        sendbuf[iy] = grid_spin[iy][0];
     }
     MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], left, cart_comm);
     MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], left, cart_comm, &status);
@@ -195,7 +195,7 @@ void comms_halo_swaps() {
     // SHIMMY RIGHT
     for (iy = 0; iy < grid_domain_size; iy++) {
         // Copy the right-hand elements into sendbuf
-        sendbuf[iy] = grid_spin[iy][0];
+        sendbuf[iy] = grid_spin[iy][grid_domain_size - 1];
     }
     MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[right], right, cart_comm);
     MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[left], right, cart_comm, &status);
@@ -206,7 +206,7 @@ void comms_halo_swaps() {
     // of grid halo. Remember to use the appropriate communicator.
     // PRANCE FORWARD
     // Since the grid is stored this way around, can memcpy it.
-    memcpy(sendbuf, grid_spin[grid_domain_size - 1], grid_domain_size * sizeof(int));
+    memcpy(sendbuf, grid_spin[0], grid_domain_size * sizeof(int));
     MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], up, cart_comm);
     MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], up, cart_comm, &status);
     memcpy(grid_halo[up], recvbuf, grid_domain_size * sizeof(int));
@@ -215,7 +215,7 @@ void comms_halo_swaps() {
     // and receive from my_rank_neighbours[down] into the appropriate part
     // of grid halo. Remember to use the appropriate communicator.
     // BOOGIE DOWN
-    memcpy(sendbuf, grid_spin[0], grid_domain_size * sizeof(int));
+    memcpy(sendbuf, grid_spin[grid_domain_size - 1], grid_domain_size * sizeof(int));
     MPI_Send(sendbuf, grid_domain_size, MPI_INT, my_rank_neighbours[up], down, cart_comm);
     MPI_Recv(recvbuf, grid_domain_size, MPI_INT, my_rank_neighbours[down], down, cart_comm, &status);
     memcpy(grid_halo[down], recvbuf, grid_domain_size * sizeof(int));
