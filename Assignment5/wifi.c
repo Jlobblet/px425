@@ -377,9 +377,8 @@ bool merge_clusters(int nra, Router** ra, int nrb, Router** rb) {
 
 ///Count the number of unique clusters in the list of routers
 int count_clusters(CellDomain* dom) {
-    int count;
+    int count = 0;
     int* counted = calloc(dom->nrtr, sizeof(int));
-    count = 0;
     for (int ic = 0; ic < dom->nc; ic++) {
         for (int i = 0; i < dom->cell_nrtr[ic]; i++) {
             bool found = false;
