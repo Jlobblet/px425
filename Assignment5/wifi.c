@@ -217,16 +217,6 @@ void create_domain_decomp(CellDomain* dom, int Nrtr, Router* Rtr, int nx, int ny
     dom->nrtr = Nrtr;
     dom->spanning_cluster = 0;
 
-    // set counts of each cell's routers to zero
-    for (int ix = 0; ix < dom->nx; ix++) {
-        for (int iy = 0; iy < dom->ny; iy++) {
-            for (int iz = 0; iz < dom->nz; iz++) {
-                int ic = ix + dom->ny * iy + dom->ny * dom->nz * iz;
-                dom->cell_nrtr[ic] = 0;
-            }
-        }
-    }
-
     // count the routers associated with each cell
     for (int i = 0; i < Nrtr; i++) {
         int ix = floor(dom->nx * Rtr[i].x / dom->Lx);
