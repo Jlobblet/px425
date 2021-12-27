@@ -1,0 +1,23 @@
+find_package(MPI)
+find_package(OpenMP)
+if (MPI_FOUND AND OpenMP_C_FOUND)
+    set(CMAKE_C_STANDARD 99)
+    include_directories(${MPI_INCLUDE_PATH})
+
+    list(APPEND AsanOptions -fno-omit-frame-pointer -fsanitize=address)
+    list(APPEND CompileOptions -Wall -Wextra -Wpedantic -mavx2 -march=native ${OpenMP_C_FLAGS} ${MPI_COMPILE_FLAGS})
+    list(APPEND LinkOptions ${MPI_LINK_FLAGS})
+    list(APPEND LinkLibraries ${MPI_LIBRARIES} OpenMP::OpenMP_C m)
+
+    if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+        list(APPEND CompileOptions ${AsanOptions})
+        list(APPEND LinkOptions ${AsanOptions})
+    else ()
+        list(APPEND CompileOptions -Werror)
+    endif ()
+
+    add_executable(assignment5 wifi.c mt19937ar.c)
+    target_compile_options(assignment5 PUBLIC ${CompileOptions})
+    target_link_options(assignment5 PUBLIC ${LinkOptions})
+    target_link_libraries(assignment5 png m ${MPI_LIBRARIES})
+endif ()
