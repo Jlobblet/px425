@@ -320,8 +320,8 @@ void find_all_clusters(CellDomain* dom) {
                 if ((ix + dx < 0) || (iy + dy < 0) || (iz + dz < 0)) { continue; }
                 // find index of neighbour cell
                 int icp = ic + dx + dom->ny * dy + dom->ny * dom->nz * dz;
-                changed = changed + merge_clusters(dom->cell_nrtr[ic], dom->cell_rtr[ic], dom->cell_nrtr[icp],
-                                                   dom->cell_rtr[icp]);
+                changed += merge_clusters(dom->cell_nrtr[ic], dom->cell_rtr[ic], dom->cell_nrtr[icp],
+                                          dom->cell_rtr[icp]);
             }
         }
     }
