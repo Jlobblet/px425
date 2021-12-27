@@ -204,11 +204,11 @@ int main(int argc, char** argv) {
 void generate_routers(int* Nrtr, Router** Rtr, double S, double R, double P) {
     *Nrtr = (int) (S * S * S * P / (R * R * R));
     *Rtr = calloc(*Nrtr, sizeof(Router));
-    double mag, x, y, z;
     for (int i = 0; i < (*Nrtr); i++) {
+        double mag = S * 4.0;
+        double x = 0.0, y = 0.0, z = 0.0;
         // Find random coordinates inside the sphere of radius S
         // whose centre is at (S, S, S)
-        mag = S * 4.0;
         while (mag > S) {
             x = genrand() * S * 2.0;
             y = genrand() * S * 2.0;
