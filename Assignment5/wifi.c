@@ -364,33 +364,28 @@ bool merge_clusters(int nra, Router** ra, int nrb, Router** rb) {
     for (int i = 0; i < nra; i++) {
         for (int j = 0; j < nrb; j++) {
             // search for pairs of routers whose cluster values are not equal
-            if (ra[i]->cluster != rb[j]->cluster) {
-                // if they are closer than the sum of their radii ..
-                if (connected(ra[i], rb[j])) {
-                    // convert whichever cluster has the higher index to match the
-                    // lower index
-                    if (rb[j]->cluster > ra[i]->cluster) {
-                        // cluster in cell A has lower index
-                        int cl = rb[j]->cluster;
-                        for (int k = 0; k < nrb; k++) {
-                            if (rb[k]->cluster == cl) {
-                                rb[k]->cluster = ra[i]->cluster;
-                            }
-                        }
-                    }  // else cluster in cell B has lower index
-                    else {
-                        int cl = ra[i]->cluster;
-                        for (int k = 0; k < nra; k++) {
-                            if (ra[k]->cluster == cl) {
-                                ra[k]->cluster = rb[j]->cluster;
-                            }
-                        }
-                    }
-                    // set flag to remember that something changed within this call so
-                    // that we can halt merging once nothing changes any more
-                    changed = true;
-                }
+            if (ra[i]->cluster == rb[j]->cluster) { continue; }
+            // if they are closer than the sum of their radii ..
+            if (!connected(ra[i], rb[j])) { continue; }
+            // convert whichever cluster has the higher index to match the lower index
+            Router** higher, ** lower;
+            if (rb[j]->cluster > ra[i]->cluster) {
+                // cluster in cell A has lower index
+                lower = ra;
+                higher = rb;
+            } else {
+                // else cluster in cell B has lower index
+                lower = rb;
+                higher = ra;
             }
+            int cl = higher[i]->cluster;
+            for (int k = 0; k < nrb; k++) {
+                if (higher[k]->cluster != cl) { continue; }
+                higher[k]->cluster = lower[i]->cluster;
+            }
+            // set flag to remember that something changed within this call so
+            // that we can halt merging once nothing changes any more
+            changed = true;
         }
     }
     return changed;
