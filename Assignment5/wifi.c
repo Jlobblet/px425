@@ -103,7 +103,16 @@ void destroy_domain_decomp(CellDomain* dom);
 // Main Routine
 int main(int argc, char** argv) {
     // Default Values
-    Args args = {.router_radius = 1.0, .space_station_initial_size = 20.0, .space_station_size_increment = 5.0, .number_space_station_size_increments = 5, .volume_fraction_initial = 0.34, .volume_fraction_increment = 0.015, .number_volume_fraction_increments = 1, .use_current_time_as_seed = false,};
+    Args args = {
+            .router_radius                        = 1.0,
+            .space_station_initial_size           = 20.0,
+            .space_station_size_increment         = 5.0,
+            .number_space_station_size_increments = 5,
+            .volume_fraction_initial              = 0.34,
+            .volume_fraction_increment            = 0.015,
+            .number_volume_fraction_increments    = 1,
+            .use_current_time_as_seed             = false,
+    };
 
     // Read command line arguments
     int ra = read_args(argc, argv, &args);
@@ -563,19 +572,19 @@ int strtoi(const char* nptr, char** endptr, int base) {
         errno = ERANGE;
         return INT_MIN;
     }
-    return (int)parsed;
+    return (int) parsed;
 }
 
 bool is_parsed_int_invalid(const char* startptr, const char* endptr, int value) {
     return startptr == endptr
-        || (value == INT_MAX && errno == ERANGE)
-        || value <= 0;
+           || (value == INT_MAX && errno == ERANGE)
+           || value <= 0;
 }
 
 bool is_parsed_double_invalid(const char* startptr, const char* endptr, double value) {
     return startptr == endptr
-        || isinf(value)
-        || isnan(value)
-        || (value == HUGE_VAL && errno == ERANGE)
-        || value <= 0.0;
+           || isinf(value)
+           || isnan(value)
+           || (value == HUGE_VAL && errno == ERANGE)
+           || value <= 0.0;
 }
