@@ -154,12 +154,12 @@ int main(int argc, char** argv) {
     // Number of runs for this invocation of the program
     int nruns = nP * nS;
 
-    // Loop over values of filling fraction P and system size space_station_initial_size
+    // Loop over values of filling fraction P and system size S
     for (int irun = 0; irun < nruns; irun++) {
         // Find values of iP and iS for this run
         int iP = irun % nP;
         int iS = (irun - iP) / nP;
-        // Find values of P and space_station_initial_size for this run
+        // Find values of P and S for this run
         double P = Pinit + iP * deltaP;
         double S = Sinit + iS * deltaS;
         dom.S = S;
@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
         // Generate randomly-placed routers in the domain
         generate_routers(&Nrtr, &Rtr, S, R, P);
         // Output sizes and volume fraction (+newline if multiple cell sizes)
-        printf("space_station_initial_size = %6.2f P = %8.6f ", S, P);
+        printf("S = %6.2f P = %8.6f ", S, P);
         if (cellmin != cellmax) { printf("\n"); }
         // Loop over domain decomposition grid sizes
         for (int i = cellmin; i <= cellmax; i++) {
@@ -391,7 +391,7 @@ bool merge_clusters(int nra, Router** ra, int nrb, Router** rb) {
     return changed;
 }
 
-///Count the number of unique clusters in the list of routers
+/// Count the number of unique clusters in the list of routers
 int count_clusters(CellDomain* dom) {
     int count = 0;
     int* counted = calloc(dom->nrtr, sizeof(int));
