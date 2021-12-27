@@ -494,7 +494,7 @@ int read_args(int argc, char** argv, Args* args) {
     opterr = 0;
 
     // Process all flags found in argv
-    while ((c = getopt(argc, argv, "t:P:S:R:D:Q:N:M")) != -1) {
+    while ((c = getopt(argc, argv, "tP:S:R:D:Q:N:M:")) != -1) {
         switch (c) {
             case 't':
                 args->use_current_time_as_seed = true;
