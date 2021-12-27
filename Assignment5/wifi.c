@@ -369,22 +369,22 @@ bool merge_clusters(int nra, Router** ra, int nrb, Router** rb) {
             if (!connected(ra[i], rb[j])) { continue; }
             // convert whichever cluster has the higher index to match the lower index
             Router** higher, ** lower;
-            int index;
+            int high_index, low_index, n_high;
             if (rb[j]->cluster > ra[i]->cluster) {
-                // cluster in cell A has lower index
-                lower = ra;
-                higher = rb;
-                index = i;
+                // cluster in cell A has lower high_index
+                lower = ra, higher = rb;
+                low_index = i, high_index = j;
+                n_high = nrb;
             } else {
-                // else cluster in cell B has lower index
-                lower = rb;
-                higher = ra;
-                index = j;
+                // else cluster in cell B has lower high_index
+                lower = rb, higher = ra;
+                low_index = j, high_index = i;
+                n_high = nra;
             }
-            int cl = higher[i]->cluster;
-            for (int k = 0; k < nrb; k++) {
+            int cl = higher[high_index]->cluster;
+            for (int k = 0; k < n_high; k++) {
                 if (higher[k]->cluster != cl) { continue; }
-                higher[k]->cluster = lower[index]->cluster;
+                higher[k]->cluster = lower[low_index]->cluster;
             }
             // set flag to remember that something changed within this call so
             // that we can halt merging once nothing changes any more
