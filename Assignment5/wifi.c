@@ -206,8 +206,8 @@ void generate_routers(int* Nrtr, Router** Rtr, double S, double R, double P) {
     *Rtr = calloc(*Nrtr, sizeof(Router));
     double mag, x, y, z;
     for (int i = 0; i < (*Nrtr); i++) {
-        // Find random coordinates inside the sphere of radius space_station_initial_size
-        // whose centre is at (space_station_initial_size,space_station_initial_size,space_station_initial_size)
+        // Find random coordinates inside the sphere of radius S
+        // whose centre is at (S, S, S)
         mag = S * 4.0;
         while (mag > S) {
             x = genrand() * S * 2.0;
