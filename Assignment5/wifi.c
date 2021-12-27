@@ -6,6 +6,8 @@
 // N. Hine, November 2021
 // phuwcs, December 2021
 #include <ctype.h>
+#include <errno.h>
+#include <limits.h>
 #include <math.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -67,6 +69,16 @@ typedef struct Args {
 } Args;
 
 // Function Prototypes
+
+void parse_int(int* addr, char* err_name);
+
+void parse_double(double* addr, char* err_name);
+
+int strtoi(const char* nptr, char** endptr, int base);
+
+bool is_parsed_int_invalid(const char* startptr, const char* endptr, int value);
+
+bool is_parsed_double_invalid(const char* startptr, const char* endptr, double value);
 
 int read_args(int argc, char** argv, Args* args);
 
@@ -481,53 +493,25 @@ int read_args(int argc, char** argv, Args* args) {
                 args->use_current_time_as_seed = true;
                 break;
             case 'P':
-                args->volume_fraction_initial = atof(optarg);
-                if (args->volume_fraction_initial <= 0.0) {
-                    opterr = 1;
-                    fprintf(stderr, "Volume fraction argument could not be read: %s\n", optarg);
-                }
+                parse_double(&args->volume_fraction_initial, "Volume fraction");
                 break;
             case 'S':
-                args->space_station_initial_size = atof(optarg);
-                if (args->space_station_initial_size <= 0.0) {
-                    opterr = 1;
-                    fprintf(stderr, "Station size argument could not be read: %s\n", optarg);
-                }
+                parse_double(&args->space_station_initial_size, "Station size");
                 break;
             case 'R':
-                args->router_radius = atof(optarg);
-                if (args->router_radius <= 0.0) {
-                    opterr = 1;
-                    fprintf(stderr, "Radius argument could not be read: %s\n", optarg);
-                }
+                parse_double(&args->router_radius, "Router radius");
                 break;
             case 'D':
-                args->space_station_size_increment = atof(optarg);
-                if (args->space_station_size_increment < 0.0) {
-                    opterr = 1;
-                    fprintf(stderr, "Station size step argument could not be read: %s\n", optarg);
-                }
+                parse_double(&args->space_station_size_increment, "Station step size");
                 break;
             case 'Q':
-                args->volume_fraction_increment = atof(optarg);
-                if (args->volume_fraction_increment < 0.0) {
-                    opterr = 1;
-                    fprintf(stderr, "Volume fraction step argument could not be read: %s\n", optarg);
-                }
+                parse_double(&args->volume_fraction_increment, "Volume fraction step");
                 break;
             case 'N':
-                args->number_space_station_size_increments = atoi(optarg);
-                if (args->number_space_station_size_increments <= 0.0) {
-                    opterr = 1;
-                    fprintf(stderr, "Number of station size steps argument could not be read: %s\n", optarg);
-                }
+                parse_int(&args->number_space_station_size_increments, "Number of station size steps");
                 break;
             case 'M':
-                args->number_volume_fraction_increments = atof(optarg);
-                if (args->number_volume_fraction_increments <= 0.0) {
-                    opterr = 1;
-                    fprintf(stderr, "Number of volume fraction steps argument could not be read: %s\n", optarg);
-                }
+                parse_int(&args->number_volume_fraction_increments, "Number of volume fraction steps");
                 break;
             case '?':
                 if ((optopt == 'R') || (optopt == 'P') || (optopt == 'S')) {
@@ -549,4 +533,49 @@ int read_args(int argc, char** argv, Args* args) {
     }
 
     return opterr;
+}
+
+void parse_int(int* addr, char* err_name) {
+    char* endptr;
+    *addr = strtoi(optarg, &endptr, 10);
+    if (is_parsed_int_invalid(optarg, endptr, *addr)) {
+        opterr = 1;
+        fprintf(stderr, "%s argument could not be read: %s\n", err_name, optarg);
+    }
+}
+
+void parse_double(double* addr, char* err_name) {
+    char* endptr;
+    *addr = strtod(optarg, &endptr);
+    if (is_parsed_double_invalid(optarg, endptr, *addr)) {
+        opterr = 1;
+        fprintf(stderr, "%s argument could not be read: %s\n", err_name, optarg);
+    }
+}
+
+int strtoi(const char* nptr, char** endptr, int base) {
+    long parsed = strtol(nptr, endptr, base);
+    if (parsed > INT_MAX) {
+        errno = ERANGE;
+        return INT_MAX;
+    }
+    if (parsed < INT_MIN) {
+        errno = ERANGE;
+        return INT_MIN;
+    }
+    return (int)parsed;
+}
+
+bool is_parsed_int_invalid(const char* startptr, const char* endptr, int value) {
+    return startptr == endptr
+        || (value == INT_MAX && errno == ERANGE)
+        || value <= 0;
+}
+
+bool is_parsed_double_invalid(const char* startptr, const char* endptr, double value) {
+    return startptr == endptr
+        || isinf(value)
+        || isnan(value)
+        || (value == HUGE_VAL && errno == ERANGE)
+        || value <= 0.0;
 }
