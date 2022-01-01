@@ -146,11 +146,6 @@ int main(int argc, char** argv) {
     }
     init_genrand(seed);
 
-    // Router-related variables
-    int Nrtr = 0;
-    Router* Rtr = NULL;
-    // Cell decomposition information
-    CellDomain dom;
     // Number of runs for this invocation of the program
     int nruns = nP * nS;
 
@@ -162,11 +157,17 @@ int main(int argc, char** argv) {
         // Find values of P and S for this run
         double P = Pinit + iP * deltaP;
         double S = Sinit + iS * deltaS;
-        dom.S = S;
-        dom.Lx = 2.0 * S;
-        dom.Ly = 2.0 * S;
-        dom.Lz = 2.0 * S;
+        // Cell decomposition information
+        CellDomain dom = {
+                .S = S,
+                .Lx = 2.0 * S,
+                .Ly = 2.0 * S,
+                .Lz = 2.0 * S,
+        };
+        // Router-related variables
+        int Nrtr = 0;
         // Generate randomly-placed routers in the domain
+        Router* Rtr;
         generate_routers(&Nrtr, &Rtr, S, R, P);
         // Output sizes and volume fraction (+newline if multiple cell sizes)
         printf("S = %6.2f P = %8.6f ", S, P);
@@ -204,6 +205,10 @@ int main(int argc, char** argv) {
 void generate_routers(int* Nrtr, Router** Rtr, double S, double R, double P) {
     *Nrtr = (int) (S * S * S * P / (R * R * R));
     *Rtr = calloc(*Nrtr, sizeof(Router));
+    if (*Rtr == NULL) {
+        fprintf(stderr, "Failed to allocate %i elements of size %lu\n", *Nrtr, sizeof(Router));
+        abort();
+    }
     for (int i = 0; i < (*Nrtr); i++) {
         double mag = S * 4.0;
         double x = 0.0, y = 0.0, z = 0.0;
