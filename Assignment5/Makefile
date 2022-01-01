@@ -15,7 +15,7 @@ all: wifi
 
 # Default build target
 wifi : wifi.o mt19937ar.o
-	$(CC) $(CFLAGS) -o $(EXE) wifi.o mt19937ar.o $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(EXE) wifi.o mt19937ar.o input.o $(LDFLAGS)
 
 # Purge build files and executable
 clean :
@@ -23,3 +23,5 @@ clean :
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+%.c:
