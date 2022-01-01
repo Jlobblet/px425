@@ -15,6 +15,7 @@
 #include <omp.h>
 #include "mt19937ar.h"
 #include "input.h"
+#include "output.h"
 
 // Typedefs
 
@@ -62,7 +63,7 @@ void generate_routers(int* Nrtr, Router** Rtr, double S, double R, double P);
 
 void create_domain_decomp(CellDomain* dom, int Nrtr, Router* Rtr, int nx, int ny, int nz);
 
-void find_all_clusters(CellDomain* dom);
+void find_all_clusters(CellDomain* dom, DecompResults* decomp_results);
 
 void destroy_domain_decomp(CellDomain* dom);
 
@@ -115,6 +116,11 @@ int main(int argc, char** argv) {
     // Number of runs for this invocation of the program
     int nruns = nP * nS;
 
+    Results results = {
+            .nruns = nruns,
+    };
+    create_Results(&results);
+
     // Loop over values of filling fraction P and system size S
     for (int irun = 0; irun < nruns; irun++) {
         // Find values of iP and iS for this run
@@ -135,24 +141,24 @@ int main(int argc, char** argv) {
         // Generate randomly-placed routers in the domain
         Router* Rtr;
         generate_routers(&Nrtr, &Rtr, S, R, P);
-        // Output sizes and volume fraction (+newline if multiple cell sizes)
-        printf("S = %6.2f P = %8.6f ", S, P);
-        if (cellmin != cellmax) { printf("\n"); }
+        // Output sizes and volume fraction
+        RunResults* run_results = &results.run_results[irun];
+        run_results->S = S;
+        run_results->P = P;
+        run_results->n_cell_sizes = cellmax - cellmin + 1;
+        create_RunResults(run_results);
         // Loop over domain decomposition grid sizes
         for (int i = cellmin; i <= cellmax; i++) {
-            if (cellmin != cellmax) { printf("ncells = %3d ", i); }
+            DecompResults* decomp_results = &run_results->decomp_results[i - cellmin];
+            decomp_results->ncells = i;
             // Initialise the domain decomposition structure
             create_domain_decomp(&dom, Nrtr, Rtr, i, i, i);
             // Find clusters in cells, merge between cells, count clusters
             // and find spanning cluster if it exists
-            find_all_clusters(&dom);
-            // Write results to stdout
-            printf(": %6d clusters, ", dom.ncluster);
-            if (dom.spanning_cluster == 0) {
-                printf("none spanning\n");
-            } else {
-                printf("%7d spans\n", dom.spanning_cluster);
-            }
+            find_all_clusters(&dom, decomp_results);
+            // Save results
+            decomp_results->n_clusters = dom.ncluster;
+            decomp_results->spanning_cluster = dom.spanning_cluster;
             // remove storage associated with domain decomposition and
             // reset Router cluster values
             destroy_domain_decomp(&dom);
@@ -162,6 +168,10 @@ int main(int argc, char** argv) {
         }
         free(Rtr);
     }
+
+    print_Results(&results);
+    destroy_Results(&results);
+
     return EXIT_SUCCESS;
 }
 
@@ -204,8 +214,8 @@ void create_domain_decomp(CellDomain* dom, int Nrtr, Router* Rtr, int nx, int ny
     dom->ny = ny;
     dom->nz = nz;
     dom->nc = nx * ny * nz;
-    dom->cell_nrtr = calloc(dom->nx * dom->ny * dom->nz, sizeof(int));
-    dom->cell_rtr = calloc(dom->nx * dom->ny * dom->nz, sizeof(Router*));
+    dom->cell_nrtr = calloc(dom->nc, sizeof(int));
+    dom->cell_rtr = calloc(dom->nc, sizeof(Router*));
     dom->nrtr = Nrtr;
     dom->spanning_cluster = 0;
 
@@ -248,9 +258,9 @@ void destroy_domain_decomp(CellDomain* dom) {
 }
 
 /// Identify all clusters in a domain decomposition structure.
-void find_all_clusters(CellDomain* dom) {
+void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
 
-    clock_t t1 = clock();
+    double t1 = omp_get_wtime();
     int cl = 1;
     // loop over all cells of the domain decomposition, then loop over the routers
     // in each cell. If cluster has not yet been identified, find all the
@@ -264,7 +274,8 @@ void find_all_clusters(CellDomain* dom) {
             }
         }
     }
-    clock_t t2 = clock();
+
+    double t2 = omp_get_wtime();
 
     // merge clusters between cells if they are connected. Start from first
     // cell and move outwards, checking the "outward" half of the set of nearest
@@ -296,14 +307,11 @@ void find_all_clusters(CellDomain* dom) {
             }
         }
     }
-    clock_t t3 = clock();
+    double t3 = omp_get_wtime();
     dom->ncluster = count_clusters(dom);
     dom->spanning_cluster = find_spanning_cluster(dom);
-    clock_t t4 = clock();
-    // print timings - you may need to disable this in parallel if
-    // it is causing problems
-    printf("(%8.4f %8.4f %8.4f sec) ", (double) (t2 - t1) / (double) CLOCKS_PER_SEC,
-           (double) (t3 - t2) / (double) CLOCKS_PER_SEC, (double) (t4 - t3) / (double) CLOCKS_PER_SEC);
+    double t4 = omp_get_wtime();
+    DecompResults_add_times(decomp_results, t1, t2, t3, t4);
 }
 
 /// Find all the "connected" routers in a list, starting from a specific Router i,
