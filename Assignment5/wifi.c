@@ -165,7 +165,7 @@ int main(int argc, char** argv) {
                 .Lz = 2.0 * S,
         };
         // Router-related variables
-        int Nrtr = 0;
+        int Nrtr;
         // Generate randomly-placed routers in the domain
         Router* Rtr;
         generate_routers(&Nrtr, &Rtr, S, R, P);
