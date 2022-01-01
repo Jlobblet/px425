@@ -340,10 +340,11 @@ void find_cluster(int Nrtr, Router** Rtr, int i) {
 /// Check if two routers are "connected", ie their separation is less than the sum of their radii.
 bool connected(Router* ra, Router* rb) {
     double separation =
-            (ra->x - rb->x) * (ra->x - rb->x) + (ra->y - rb->y) * (ra->y - rb->y) + (ra->z - rb->z) * (ra->z - rb->z);
+            (ra->x - rb->x) * (ra->x - rb->x)
+            + (ra->y - rb->y) * (ra->y - rb->y)
+            + (ra->z - rb->z) * (ra->z - rb->z);
     double sum_of_radii = (ra->r + rb->r) * (ra->r + rb->r);
-    if (separation <= sum_of_radii) { return true; }
-    else { return false; }
+    return separation <= sum_of_radii;
 }
 
 /// Merge the clusters associated with two lists of routers if pairs of them are closer than the sum of their radii.
