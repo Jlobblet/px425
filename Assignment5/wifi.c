@@ -69,6 +69,7 @@ void destroy_domain_decomp(CellDomain* dom);
 
 // Main Routine
 int main(int argc, char** argv) {
+    double start_time = omp_get_wtime();
     // Default Values
     Args args = {
             .router_radius                        = 1.0,
@@ -103,7 +104,7 @@ int main(int argc, char** argv) {
 
     bool seedtime = args.use_current_time_as_seed;
 
-    int cellmin = 1, cellmax = 1;
+    int cellmin = 20, cellmax = 20;
 
     // Seed random number generator
     unsigned long seed = 20350292;
@@ -171,6 +172,9 @@ int main(int argc, char** argv) {
 
     print_Results(&results);
     destroy_Results(&results);
+
+    double end_time = omp_get_wtime();
+    printf("\nTotal time: %6.4f\n", end_time - start_time);
 
     return EXIT_SUCCESS;
 }
@@ -281,10 +285,18 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
     // cell and move outwards, checking the "outward" half of the set of nearest
     // neighbour cells. Always retain lower numbered cluster to prevent circular
     // "flows" of cluster value
-    int changed = 1;
+    bool changed = true;
+    int dxs[27], dys[27], dzs[27];
+    for (int i = 14; i < 27; i++) {
+        dxs[i] = i % 3 - 1;
+        dys[i] = ((i - dxs[i]) / 3) % 3 - 1;
+        dzs[i] = (i - dxs[i] - 3 * dys[i]) / 9 - 1;
+    }
+
     // keep repeating loop until nothing changes any more
-    while (changed > 0) {
-        changed = 0;
+    while (changed) {
+        changed = false;
+#pragma omp parallel for default(none) shared(dom, dxs, dys, dzs) reduction(||: changed)
         for (int ic = 0; ic < dom->nx * dom->ny * dom->nz; ic++) {
             // loop over 13 of the 26 "nearest neighbour" cells on the cubic
             // lattice, ie the outward half - otherwise double counting will
@@ -293,16 +305,16 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
             int iy = ((ic - ix) / dom->nx) % dom->ny;
             int iz = (ic - ix - dom->ny * iy) / (dom->nx * dom->ny);
             for (int neighb = 14; neighb < 27; neighb++) {
-                // modulo arithmetic to find dx,dy,dz
-                int dx = neighb % 3 - 1;
-                int dy = ((neighb - dx) / 3) % 3 - 1;
-                int dz = (neighb - dx - 3 * dy) / 9 - 1;
+                // modulo arithmetic to find dx, dy, dz
+                int dx = dxs[neighb];
+                int dy = dys[neighb];
+                int dz = dzs[neighb];
                 // prevent checking beyond limits of cell grid
                 if ((ix + dx >= dom->nx) || (iy + dy >= dom->ny) || (iz + dz >= dom->nz)) { continue; }
                 if ((ix + dx < 0) || (iy + dy < 0) || (iz + dz < 0)) { continue; }
                 // find index of neighbour cell
                 int icp = ic + dx + dom->ny * dy + dom->ny * dom->nz * dz;
-                changed += merge_clusters(dom->cell_nrtr[ic], dom->cell_rtr[ic], dom->cell_nrtr[icp],
+                changed |= merge_clusters(dom->cell_nrtr[ic], dom->cell_rtr[ic], dom->cell_nrtr[icp],
                                           dom->cell_rtr[icp]);
             }
         }
@@ -375,30 +387,28 @@ bool merge_clusters(int nra, Router** ra, int nrb, Router** rb) {
 
 /// Count the number of unique clusters in the list of routers
 int count_clusters(CellDomain* dom) {
-    int count = 0;
-    int* counted = calloc(dom->nrtr, sizeof(int));
+    // The max number of clusters is the number of routers (each router in its own cluster)
+    bool* counted = calloc(dom->nrtr, sizeof(bool));
+    // This is a relaxed loop since it's just setting things to true
+#pragma omp parallel for default(none) shared(dom, counted)
     for (int ic = 0; ic < dom->nc; ic++) {
         for (int i = 0; i < dom->cell_nrtr[ic]; i++) {
-            bool found = false;
-            // check if we have already counted this cluster
-            for (int j = 0; j < count; j++) {
-                if (dom->cell_rtr[ic][i]->cluster == counted[j]) {
-                    found = true;
-                    break;
-                }
-            }
-            // if not, add it to the list and increment the count
-            if (!found) {
-                counted[count] = dom->cell_rtr[ic][i]->cluster;
-                count++;
-            }
+            // Mark this cluster as having been found
+            int cluster = dom->cell_rtr[ic][i]->cluster;
+            counted[cluster] = true;
         }
+    }
+
+    // Count the number of clusters that have been marked as found
+    int count = 0;
+    for (int i = 0; i < dom->nrtr; i++) {
+        count += counted[i];
     }
     free(counted);
     return count;
 }
 
-///check if there are clusters extending to the surface in each octant
+/// Check if there are clusters extending to the surface in each octant
 int find_spanning_cluster(CellDomain* dom) {
     int* octant_check_list[8];
 
@@ -413,6 +423,7 @@ int find_spanning_cluster(CellDomain* dom) {
     }
 
     //Loop over cells
+#pragma omp parallel for default(none) shared(dom, octant_check_list)
     for (int ic = 0; ic < dom->nc; ic++) {
         // Loop over routers in each cell
         for (int i = 0; i < dom->cell_nrtr[ic]; i++) {
@@ -450,6 +461,7 @@ int find_spanning_cluster(CellDomain* dom) {
         int cl = octant_check_list[0][icl];
         if (cl == -1) { break; }
         // Check all 8 octants to check this cluster appears in each
+#pragma omp parallel for default(none) shared(dom, octant_check_list, cl) reduction(+: sum)
         for (int ioct = 0; ioct < 8; ioct++) {
             for (int jcl = 0; jcl < dom->ncluster; jcl++) {
                 if (octant_check_list[ioct][jcl] == cl) {
