@@ -49,7 +49,10 @@ void print_Results(const Results* results) {
         for (int j = 0; j < run_results->n_cell_sizes; j++) {
             DecompResults decomp_results = run_results->decomp_results[j];
             if (!single_size) { printf("ncells = %3d ", decomp_results.ncells); }
-            printf("(%8.4f %8.4f %8.4f sec) ", decomp_results.cluster_search_time, decomp_results.cluster_merge_time, decomp_results.cluster_span_time);
+            printf("(%8.4f %8.4f %8.4f sec) ",
+                   decomp_results.cluster_search_time,
+                   decomp_results.cluster_merge_time,
+                   decomp_results.cluster_span_time);
             printf(": %6d clusters, ", decomp_results.n_clusters);
             if (decomp_results.spanning_cluster) {
                 printf("%7d spans", decomp_results.spanning_cluster);
