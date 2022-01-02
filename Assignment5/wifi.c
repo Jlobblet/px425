@@ -67,6 +67,8 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results);
 
 void destroy_domain_decomp(CellDomain* dom);
 
+void defragment_clusters(CellDomain* dom);
+
 // Main Routine
 int main(int argc, char** argv) {
     double start_time = omp_get_wtime();
@@ -320,7 +322,8 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
         }
     }
     double t3 = omp_get_wtime();
-    dom->ncluster = count_clusters(dom);
+    defragment_clusters(dom);
+//    dom->ncluster = count_clusters(dom);
     dom->spanning_cluster = find_spanning_cluster(dom);
     double t4 = omp_get_wtime();
     DecompResults_add_times(decomp_results, t1, t2, t3, t4);
@@ -411,16 +414,14 @@ int count_clusters(CellDomain* dom) {
 
 /// Check if there are clusters extending to the surface in each octant
 int find_spanning_cluster(CellDomain* dom) {
-    int* octant_check_list[8];
+    // 2d array 8 x n_cluster, true in cell oct, cl if cluster cl is in octant oct
+    bool* octant_check_list[8];
 
     int spanning_cluster = 0;
 
     // Set up and initialise storage for finding spanning cluster
     for (int ioct = 0; ioct < 8; ioct++) {
-        octant_check_list[ioct] = calloc(dom->ncluster, sizeof(int));
-        for (int i = 0; i < dom->ncluster; i++) {
-            octant_check_list[ioct][i] = -1;
-        }
+        octant_check_list[ioct] = calloc(dom->ncluster, sizeof(bool));
     }
 
     //Loop over cells
@@ -434,42 +435,23 @@ int find_spanning_cluster(CellDomain* dom) {
             double m = dom->cell_rtr[ic][i]->m;
             double r = dom->cell_rtr[ic][i]->r;
             int cl = dom->cell_rtr[ic][i]->cluster;
+            if (m + r <= dom->S) { continue; }
             // If Router touches the sphere edge...
-            if (m + r > dom->S) {
-                int ioct = 0;
-                // Calculate which octant Router is in
-                if (x > dom->S) { ioct++; }
-                if (y > dom->S) { ioct += 2; }
-                if (z > dom->S) { ioct += 4; }
-                // Check if this cluster has been found for this octant
-                for (int icl = 0; icl < dom->ncluster; icl++) {
-                    // If we reach the end of the list of clusters, add this one at
-                    // the end and stop looking
-                    if (octant_check_list[ioct][icl] == -1) {
-                        octant_check_list[ioct][icl] = cl;
-                        break;
-                    }
-                    // If this cluster has already been listed, stop looking
-                    if (octant_check_list[ioct][icl] == cl) { break; }
-                }
-            }
+            int ioct = 0;
+            // Calculate which octant Router is in
+            if (x > dom->S) { ioct++; }
+            if (y > dom->S) { ioct += 2; }
+            if (z > dom->S) { ioct += 4; }
+            // Mark this cluster as found
+            octant_check_list[ioct][cl] = true;
         }
     }
-    // Check if the same cluster appears in all 8 lists
+#pragma omp parallel for default(none) shared(dom, octant_check_list) reduction(+: spanning_cluster)
+    // Count the number of clusters in all 8 octants
     for (int icl = 0; icl < dom->ncluster; icl++) {
         int sum = 0;
-        // Get next cluster from octant 0, quit if blank
-        int cl = octant_check_list[0][icl];
-        if (cl == -1) { break; }
-        // Check all 8 octants to check this cluster appears in each
-#pragma omp parallel for default(none) shared(dom, octant_check_list, cl) reduction(+: sum)
         for (int ioct = 0; ioct < 8; ioct++) {
-            for (int jcl = 0; jcl < dom->ncluster; jcl++) {
-                if (octant_check_list[ioct][jcl] == cl) {
-                    sum++;
-                    break;
-                }
-            }
+            sum += octant_check_list[ioct][icl];
         }
         if (sum == 8) { spanning_cluster++; }
     }
@@ -480,3 +462,46 @@ int find_spanning_cluster(CellDomain* dom) {
     return spanning_cluster;
 }
 
+void defragment_clusters(CellDomain* dom) {
+    int capacity = 16;
+    int* cluster_mapping = calloc(capacity, sizeof(int));
+    if (cluster_mapping == NULL) {
+        fprintf(stderr, "Error allocating cluster defragmentation array.\n");
+        abort();
+    }
+
+    int max_cluster = 0, current_remap = 0;
+
+#pragma omp parallel for default(none) shared(max_cluster, capacity, cluster_mapping)
+    for (int j = max_cluster; j < capacity; j++) {
+        cluster_mapping[j] = -1;
+    }
+
+    for (int ic = 0; ic < dom->nc; ic++) {
+        for (int i = 0; i < dom->cell_nrtr[ic]; i++) {
+            int cluster = dom->cell_rtr[ic][i]->cluster;
+            if (cluster > max_cluster) {
+                max_cluster = cluster;
+            }
+            if (max_cluster >= capacity) {
+                int new_capacity = max_cluster + 1;
+                cluster_mapping = realloc(cluster_mapping, new_capacity * sizeof(int));
+                if (cluster_mapping == NULL) {
+                    fprintf(stderr, "Error allocating cluster defragmentation array.\n");
+                    abort();
+                }
+                for (int j = capacity; j < new_capacity; j++) {
+                    cluster_mapping[j] = -1;
+                }
+                capacity = new_capacity;
+            }
+            if (cluster_mapping[cluster] == -1) {
+                cluster_mapping[cluster] = current_remap;
+                current_remap++;
+            }
+            dom->cell_rtr[ic][i]->cluster = cluster_mapping[cluster];
+        }
+    }
+    dom->ncluster = current_remap;
+    free(cluster_mapping);
+}
