@@ -85,18 +85,10 @@ void comms_processor_map() {
     MPI_Comm_rank(cart_comm, &my_cart_rank);
     MPI_Cart_coords(cart_comm, my_cart_rank, 2, my_rank_coords);
 
-    int coords[2] = {my_rank_coords[0] - 1 , my_rank_coords[1]};
-    MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[left]);
-
-    coords[0] = my_rank_coords[0] + 1;
-    MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[right]);
-
-    coords[0] = my_rank_coords[0];
-    coords[1] = my_rank_coords[1] - 1;
-    MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[down]);
-
-    coords[1] = my_rank_coords[1] + 1;
-    MPI_Cart_rank(cart_comm, coords, &my_rank_neighbours[up]);
+    MPI_Cart_shift(cart_comm, 0, -1, my_rank_coords, &my_rank_neighbours[left]);
+    MPI_Cart_shift(cart_comm, 0, 1, my_rank_coords, &my_rank_neighbours[right]);
+    MPI_Cart_shift(cart_comm, 1, -1, my_rank_coords, &my_rank_neighbours[down]);
+    MPI_Cart_shift(cart_comm, 1, 1, my_rank_coords, &my_rank_neighbours[up]);
 
 //    printf("My rank       : %d\n"
 //           "My coordinates: %d %d\n"
