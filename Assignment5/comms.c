@@ -115,7 +115,7 @@ MPI_Datatype create_DecompResults_datatype() {
             offsetof(DecompResults, n_clusters),
             offsetof(DecompResults, spanning_cluster)
     };
-    MPI_Datatype datatypes[6] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_INT, MPI_INT};
+    MPI_Datatype datatypes[6] = {MPI_INT, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_INT, MPI_INT};
     MPI_Datatype type;
     MPI_Type_create_struct(6, blocklengths, displacements, datatypes, &type);
 
@@ -145,7 +145,7 @@ MPI_Datatype create_RunResults_datatype(int n_cell_sizes) {
     return type;
 }
 
-MPI_Datatype create_Results_datatype(int n_runs, MPI_Datatype MPI_RUNRESULTS) {
+MPI_Datatype create_Results_datatype(int n_runs) {
     int blocklengths[2] = {1, n_runs};
     MPI_Aint displacements[2] = {
             offsetof(Results, n_runs),
