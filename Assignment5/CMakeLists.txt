@@ -16,7 +16,7 @@ if (MPI_FOUND AND OpenMP_C_FOUND)
         list(APPEND CompileOptions -Werror)
     endif ()
 
-    add_executable(assignment5 wifi.c mt19937ar.c input.c output.c output.h)
+    add_executable(assignment5 wifi.c mt19937ar.c input.c output.c comms.c types.c)
     target_compile_options(assignment5 PUBLIC ${CompileOptions})
     target_link_options(assignment5 PUBLIC ${LinkOptions})
     target_link_libraries(assignment5 ${LinkLibraries})

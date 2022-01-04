@@ -23,7 +23,7 @@ void create_RunResults(RunResults* run_results);
 void destroy_RunResults(RunResults* run_results);
 
 typedef struct Results {
-    int nruns;
+    int n_runs;
     RunResults* run_results;
 } Results;
 
@@ -31,5 +31,6 @@ void create_Results(Results* results);
 void destroy_Results(Results* results);
 
 void print_Results(const Results* results);
+void print_RunResults(const RunResults* run_results);
 
 #endif //PX425_OUTPUT_H

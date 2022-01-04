@@ -1,8 +1,3 @@
-#include "mt19937ar.h"
-#include <omp.h>
-#include <mpi.h>
-#include <time.h>
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
