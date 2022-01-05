@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
     bool seedtime = args.use_current_time_as_seed;
 
-    const int cellmin = (int)floor(args.space_station_initial_size) / 2, cellmax = cellmin;
+    const int cellmin = (int) (ceil(args.space_station_initial_size) / (2.5 * floor(args.router_radius))), cellmax = cellmin;
 
     // Seed random number generator
     unsigned long seed = 20350292;
@@ -132,7 +132,7 @@ void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results,
     // Find values of P and S for this run
     const double P = Pinit + iP * deltaP;
     const double S = Sinit + iS * deltaS;
-    cellmax = cellmin = (int)floor(S) / 2;
+    cellmax = cellmin = (int)(ceil(S) / (2.5 * floor(args->router_radius)));
     // Output sizes and volume fraction
     run_results->S = S;
     run_results->P = P;
