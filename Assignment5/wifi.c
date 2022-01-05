@@ -217,7 +217,7 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
     // keep repeating loop until nothing changes any more
     while (changed) {
         changed = false;
-        // this loop is slower when parallelised
+#pragma omp parallel for default(none) shared(dom, dxs, dys, dzs) reduction(||: changed)
         for (int ic = 0; ic < dom->nx * dom->ny * dom->nz; ic++) {
             // loop over 13 of the 26 "nearest neighbour" cells on the cubic
             // lattice, ie the outward half - otherwise double counting will
