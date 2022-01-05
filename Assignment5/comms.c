@@ -12,8 +12,9 @@ void comms_initialise(int* argc, char*** argv, MpiInfo* info) {
     MPI_Init(argc, argv);
     MPI_Comm_size(MPI_COMM_WORLD, &info->n_processors);
     MPI_Comm_rank(MPI_COMM_WORLD, &info->my_rank);
-    MPI_ARGS = create_Args_datatype();
-    MPI_DECOMPRESULTS = create_DecompResults_datatype();
+    DT_ARGS = create_Args_datatype();
+    DT_DECOMPRESULTS = create_DecompResults_datatype();
+    DT_RUNRESULTS = create_RunResults_datatype();
 }
 
 Args comms_read_input(int argc, char** argv, MpiInfo* info) {
@@ -40,7 +41,7 @@ Args comms_read_input(int argc, char** argv, MpiInfo* info) {
         }
     }
 
-    if (MPI_Bcast(&args, 1, MPI_ARGS, 0, MPI_COMM_WORLD)) {
+    if (MPI_Bcast(&args, 1, DT_ARGS, 0, MPI_COMM_WORLD)) {
         fprintf(stderr, "Failure broadcasting arguments.\n");
         abort();
     }
@@ -76,8 +77,9 @@ Args comms_read_input(int argc, char** argv, MpiInfo* info) {
 //}
 
 void comms_finalise() {
-    MPI_Type_free(&MPI_DECOMPRESULTS);
-    MPI_Type_free(&MPI_ARGS);
+    MPI_Type_free(&DT_RUNRESULTS);
+    MPI_Type_free(&DT_DECOMPRESULTS);
+    MPI_Type_free(&DT_ARGS);
     MPI_Finalize();
 }
 
@@ -126,15 +128,16 @@ MPI_Datatype create_DecompResults_datatype() {
     return type;
 }
 
-MPI_Datatype create_RunResults_datatype(int n_cell_sizes) {
-    int blocklengths[4] = {1, 1, 1, n_cell_sizes};
+MPI_Datatype create_RunResults_datatype() {
+    // Send the value of the pointer over as bytes, but it will be overwritten by the receiving code
+    int blocklengths[4] = {1, 1, 1, sizeof(DecompResults*)};
     MPI_Aint displacements[4] = {
             offsetof(RunResults, S),
             offsetof(RunResults, P),
             offsetof(RunResults, n_cell_sizes),
             offsetof(RunResults, decomp_results)
     };
-    MPI_Datatype datatypes[4] = {MPI_DOUBLE, MPI_DOUBLE, MPI_INT, MPI_DECOMPRESULTS};
+    MPI_Datatype datatypes[4] = {MPI_DOUBLE, MPI_DOUBLE, MPI_INT, MPI_BYTE};
     MPI_Datatype type;
     MPI_Type_create_struct(4, blocklengths, displacements, datatypes, &type);
 
@@ -143,22 +146,4 @@ MPI_Datatype create_RunResults_datatype(int n_cell_sizes) {
     MPI_Type_create_resized(type, lb, extent, &type);
     MPI_Type_commit(&type);
     return type;
-}
-
-MPI_Datatype create_Results_datatype(int n_runs) {
-    int blocklengths[2] = {1, n_runs};
-    MPI_Aint displacements[2] = {
-            offsetof(Results, n_runs),
-            offsetof(Results, run_results)
-    };
-    MPI_Datatype datatypes[2] = {MPI_INT, MPI_RUNRESULTS};
-    MPI_Datatype type;
-    MPI_Type_create_struct(4, blocklengths, displacements, datatypes, &type);
-
-    MPI_Aint lb, extent;
-    MPI_Type_get_extent(type, &lb, &extent);
-    MPI_Type_create_resized(type, lb, extent, &type);
-    MPI_Type_commit(&type);
-    return type;
-
 }

@@ -5,7 +5,7 @@ if (MPI_FOUND AND OpenMP_C_FOUND)
     include_directories(${MPI_INCLUDE_PATH})
 
     list(APPEND AsanOptions -fno-omit-frame-pointer -fsanitize=address)
-    list(APPEND CompileOptions -Wall -Wextra -Wpedantic -mavx2 -march=native ${OpenMP_C_FLAGS} ${MPI_COMPILE_FLAGS})
+    list(APPEND CompileOptions -Wall -Wextra -Wpedantic -Wno-unused-parameter -mavx2 -march=native ${OpenMP_C_FLAGS} ${MPI_COMPILE_FLAGS})
     list(APPEND LinkOptions ${MPI_LINK_FLAGS})
     list(APPEND LinkLibraries ${MPI_LIBRARIES} OpenMP::OpenMP_C m)
 

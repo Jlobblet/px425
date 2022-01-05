@@ -4,15 +4,13 @@
 #include "input.h"
 #include "types.h"
 
-MPI_Datatype MPI_ARGS, MPI_DECOMPRESULTS, MPI_RUNRESULTS;
+MPI_Datatype DT_ARGS, DT_DECOMPRESULTS, DT_RUNRESULTS;
 
 MPI_Datatype create_Args_datatype();
 
 MPI_Datatype create_DecompResults_datatype();
 
-MPI_Datatype create_RunResults_datatype(int n_cell_sizes);
-
-MPI_Datatype create_Results_datatype(int n_runs);
+MPI_Datatype create_RunResults_datatype();
 
 void comms_initialise(int* argc, char*** argv, MpiInfo* info);
 

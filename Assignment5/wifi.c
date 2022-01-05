@@ -12,6 +12,7 @@
 #include <time.h>
 #include <mpi.h>
 #include <omp.h>
+#include <assert.h>
 #include "mt19937ar.h"
 #include "input.h"
 #include "output.h"
@@ -32,13 +33,13 @@ int count_clusters(CellDomain* dom);
 
 void find_all_clusters(CellDomain* dom, DecompResults* decomp_results);
 
-void do_run(const Args* args, const MpiInfo* info, MPI_Request* request, int cellmin, int cellmax, RunResults* run_results, int irun);
+void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results, int irun, int nruns, MPI_Request* run_requests, MPI_Request* decomp_requests);
 
 // Main Routine
 int main(int argc, char** argv) {
     MpiInfo info;
     comms_initialise(&argc, &argv, &info);
-    const double start_time = omp_get_wtime();
+    const double start_time = MPI_Wtime();
 
     Args args = comms_read_input(argc, argv, &info);
 
@@ -48,7 +49,7 @@ int main(int argc, char** argv) {
 
     bool seedtime = args.use_current_time_as_seed;
 
-    const int cellmin = 20, cellmax = 20;
+    const int cellmin = 1, cellmax = 20;
 
     // Seed random number generator
     unsigned long seed = 20350292;
@@ -66,93 +67,115 @@ int main(int argc, char** argv) {
     };
     create_Results(&results);
 
-    MPI_Request* requests = calloc(nruns, sizeof(MPI_Request));
-    if (requests == NULL) { abort(); }
-    MPI_RUNRESULTS = create_RunResults_datatype(cellmax - cellmin + 1);
-
-    // Loop over values of filling fraction P and system size S
-    for (int irun = 0; irun < nruns; irun++) {
-        do_run(&args, &info, &requests[irun], cellmin, cellmax, &results.run_results[irun], irun);
+    MPI_Request* run_requests = calloc(nruns, sizeof(MPI_Request));
+    if (run_requests == NULL) { abort(); }
+    MPI_Request* decomp_requests = calloc(nruns, sizeof(MPI_Request));
+    if (decomp_requests == NULL) { abort(); }
+    for (int i = 0; i < nruns; i++) {
+        run_requests[i] = MPI_REQUEST_NULL;
+        decomp_requests[i] = MPI_REQUEST_NULL;
     }
+
+    for (int irun = info.my_rank; irun < nruns; irun += info.n_processors) {
+        do_run(&args, cellmin, cellmax, &results.run_results[irun], irun, nruns, run_requests, decomp_requests);
+    }
+
+    MPI_Status* statuses = calloc(nruns, sizeof(MPI_Status));
+    if (statuses == NULL) { abort(); }
 
     if (info.my_rank == 0) {
-        MPI_Status* statuses = calloc(nruns, sizeof(MPI_Status));
-        if (statuses == NULL) { abort(); }
-        MPI_Waitall(nruns, requests, statuses);
+        for (int irun = 0; irun < nruns; irun++) {
+            MPI_Status status;
+            MPI_Recv(&results.run_results[irun], 1, DT_RUNRESULTS, MPI_ANY_SOURCE, irun, MPI_COMM_WORLD, &status);
+            results.run_results[irun].decomp_results = calloc(results.run_results[irun].n_cell_sizes, sizeof(DecompResults));
+            if (results.run_results[irun].decomp_results == NULL) { abort(); }
+            MPI_Recv(
+                results.run_results[irun].decomp_results,
+                results.run_results[irun].n_cell_sizes,
+                DT_DECOMPRESULTS,
+                MPI_ANY_SOURCE,
+                irun,
+                MPI_COMM_WORLD,
+                &status
+            );
+        }
         print_Results(&results);
-        const double end_time = omp_get_wtime();
+        const double end_time = MPI_Wtime();
         printf("\nTotal time: %6.4f\n", end_time - start_time);
-        free(statuses);
+
     }
 
-    free(requests);
+    MPI_Waitall(nruns, run_requests, statuses);
+    MPI_Waitall(nruns, decomp_requests, statuses);
+
+    free(statuses);
+    free(run_requests);
+    free(decomp_requests);
     destroy_Results(&results);
     comms_finalise();
 
     return EXIT_SUCCESS;
 }
 
-void do_run(const Args* args, const MpiInfo* info, MPI_Request* request, int cellmin, int cellmax, RunResults* run_results, int irun) {
-    // If this rank needs to do some work
-    if (info->my_rank != 0 && (irun % info->n_processors) != info->my_rank) { return; }
+void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results, int irun, int nruns, MPI_Request* run_requests, MPI_Request* decomp_requests) {
+    // Find values of iP and iS for this run
+    const int nP = args->number_volume_fraction_increments;
+    const double Pinit = args->volume_fraction_initial;
+    const double deltaP = args->volume_fraction_increment;
+    const double Sinit = args->space_station_initial_size;
+    const double deltaS = args->space_station_size_increment;
+    const int iP = irun % nP;
+    const int iS = (irun - iP) / nP;
+    // Find values of P and S for this run
+    const double P = Pinit + iP * deltaP;
+    const double S = Sinit + iS * deltaS;
+    // Output sizes and volume fraction
+    run_results->S = S;
+    run_results->P = P;
+    run_results->n_cell_sizes = cellmax - cellmin + 1;
+    create_RunResults(run_results);
 
-    if (info->my_rank == 0) {
-        MPI_Irecv(run_results, 1, MPI_RUNRESULTS, irun % info->n_processors, irun, MPI_COMM_WORLD, request);
-    }
-    if ((irun % info->n_processors) == info->my_rank) {
-        // Find values of iP and iS for this run
-        const int nP = args->number_volume_fraction_increments;
-        const double Pinit = args->volume_fraction_initial;
-        const double deltaP = args->volume_fraction_increment;
-        const double Sinit = args->space_station_initial_size;
-        const double deltaS = args->space_station_size_increment;
-        const int iP = irun % nP;
-        const int iS = (irun - iP) / nP;
-        // Find values of P and S for this run
-        const double P = Pinit + iP * deltaP;
-        const double S = Sinit + iS * deltaS;
-        // Output sizes and volume fraction
-        run_results->S = S;
-        run_results->P = P;
-        run_results->n_cell_sizes = cellmax - cellmin + 1;
-        create_RunResults(run_results);
+    // Cell decomposition information
+    CellDomain dom = {
+            .S = S,
+            .Lx = 2.0 * S,
+            .Ly = 2.0 * S,
+            .Lz = 2.0 * S,
+    };
+    // Router-related variables
+    int Nrtr;
+    // Generate randomly-placed routers in the domain
+    Router* Rtr;
+    const double R = args->router_radius;
+    generate_routers(&Nrtr, &Rtr, S, R, P);
+    // Loop over domain decomposition grid sizes
+#pragma omp parallel for default(none) shared(cellmin, cellmax, Nrtr, Rtr, run_results, dom)
+    for (int i = cellmin; i <= cellmax; i++) {
+        // Create local copies of data to not interfere with other threads
+        Router* Rtr_local = calloc(Nrtr, sizeof(Router));
+        memcpy(Rtr_local, Rtr, Nrtr * sizeof(Router));
 
-        // Cell decomposition information
-        CellDomain dom = {
-                .S = S,
-                .Lx = 2.0 * S,
-                .Ly = 2.0 * S,
-                .Lz = 2.0 * S,
-        };
-        // Router-related variables
-        int Nrtr;
-        // Generate randomly-placed routers in the domain
-        Router* Rtr;
-        const double R = args->router_radius;
-        generate_routers(&Nrtr, &Rtr, S, R, P);
-        // Loop over domain decomposition grid sizes
-//#pragma omp parallel default(none) shared(cellmin, cellmax, Nrtr, Rtr, run_results) private(dom)
-        for (int i = cellmin; i <= cellmax; i++) {
-            Router* Rtr_local = calloc(Nrtr, sizeof(Router));
-            memcpy(Rtr_local, Rtr, Nrtr * sizeof(Router));
-            DecompResults* decomp_results = &run_results->decomp_results[i - cellmin];
-            decomp_results->ncells = i;
-            // Initialise the domain decomposition structure
-            create_domain_decomp(&dom, Nrtr, Rtr_local, i, i, i);
-            // Find clusters in cells, merge between cells, count clusters
-            // and find spanning cluster if it exists
-            find_all_clusters(&dom, decomp_results);
-            // Save results
-            decomp_results->n_clusters = dom.n_clusters;
-            decomp_results->spanning_cluster = dom.spanning_cluster;
-            // remove storage associated with domain decomposition and
-            // reset Router cluster values
-            destroy_domain_decomp(&dom);
-            free(Rtr_local);
-        }
-        MPI_Isend(run_results, 1, MPI_RUNRESULTS, 0, irun, MPI_COMM_WORLD, request);
-        free(Rtr);
+        CellDomain dom_local = dom;
+
+        DecompResults* decomp_results = &run_results->decomp_results[i - cellmin];
+        decomp_results->ncells = i;
+
+        // Initialise the domain decomposition structure
+        create_domain_decomp(&dom_local, Nrtr, Rtr_local, i, i, i);
+
+        // Find clusters in cells, merge between cells, count clusters and find spanning cluster if it exists
+        find_all_clusters(&dom_local, decomp_results);
+
+        // Save results
+        decomp_results->n_clusters = dom_local.n_clusters;
+        decomp_results->spanning_cluster = dom_local.spanning_cluster;
+        // Remove storage associated with domain decomposition and reset Router cluster values
+        destroy_domain_decomp(&dom_local);
+        free(Rtr_local);
     }
+    MPI_Isend(run_results, 1, DT_RUNRESULTS, 0, irun, MPI_COMM_WORLD, &run_requests[irun]);
+    MPI_Isend(run_results->decomp_results, run_results->n_cell_sizes, DT_DECOMPRESULTS, 0, irun, MPI_COMM_WORLD, &decomp_requests[irun]);
+    free(Rtr);
 }
 
 /// Identify all clusters in a domain decomposition structure.
@@ -371,4 +394,3 @@ int find_spanning_cluster(CellDomain* dom) {
     }
     return spanning_cluster;
 }
-

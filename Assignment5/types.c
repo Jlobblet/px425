@@ -54,6 +54,9 @@ void create_domain_decomp(CellDomain* dom, int Nrtr, Router* Rtr, int nx, int ny
         int iy = floor(dom->ny * Rtr[i].y / dom->Ly);
         int iz = floor(dom->nz * Rtr[i].z / dom->Lz);
         int ic = ix + dom->ny * iy + dom->ny * dom->nz * iz;
+        if (ic >= dom->nc) {
+            printf("oh no\n");
+        }
         dom->cell_n_routers[ic]++;
     }
 
