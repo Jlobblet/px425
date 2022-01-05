@@ -12,9 +12,10 @@
 cd "$SLURM_SUBMIT_DIR" || exit 1
 
 # Load the modules used when compiling my code
+module purge
 module load GCC/9.3.0 libpng/1.6.37 OpenMPI/4.0.3
 
 # Note we use srun rather than mpirun here
-srun ./wifi -L 50 -P 0.30 -D 0 -N 5
+srun -genv I_MPI_FABRICS=dapl,ofa,tcp,tmi,ofi ./wifi -L 50 -P 0.30 -D 0 -N 5
 
 exit 0

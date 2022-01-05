@@ -9,7 +9,7 @@ CFLAGS= -O3 -march=native -fopenmp -mavx2 -Wall -Wextra -Wpedantic
 # Command to use for linking and executable
 LD=ld
 EXE=wifi
-LDFLAGS=-lm
+LDFLAGS=-lm -lpthread
 
 all: wifi
 
