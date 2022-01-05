@@ -3,11 +3,11 @@
 ########################################
 
 # C compiler and flags
-CC=gcc -O0 -march=native -fopenmp
-CFLAGS=-Wall -Wextra 
+CC=mpicc
+CFLAGS= -O3 -march=native -fopenmp -mavx2 -Wall -Wextra -Wpedantic
 
 # Command to use for linking and executable
-LD=gcc 
+LD=gcc
 EXE=wifi
 LDFLAGS=-lm
 
