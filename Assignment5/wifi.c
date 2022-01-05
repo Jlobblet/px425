@@ -12,7 +12,6 @@
 #include <time.h>
 #include <mpi.h>
 #include <omp.h>
-#include <assert.h>
 #include "mt19937ar.h"
 #include "input.h"
 #include "output.h"
@@ -33,7 +32,7 @@ int count_clusters(CellDomain* dom);
 
 void find_all_clusters(CellDomain* dom, DecompResults* decomp_results);
 
-void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results, int irun, int nruns, MPI_Request* run_requests, MPI_Request* decomp_requests);
+void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results, int irun, MPI_Request* run_requests, MPI_Request* decomp_requests);
 
 // Main Routine
 int main(int argc, char** argv) {
@@ -77,7 +76,7 @@ int main(int argc, char** argv) {
     }
 
     for (int irun = info.my_rank; irun < nruns; irun += info.n_processors) {
-        do_run(&args, cellmin, cellmax, &results.run_results[irun], irun, nruns, run_requests, decomp_requests);
+        do_run(&args, cellmin, cellmax, &results.run_results[irun], irun, run_requests, decomp_requests);
     }
 
     MPI_Status* statuses = calloc(nruns, sizeof(MPI_Status));
@@ -86,7 +85,8 @@ int main(int argc, char** argv) {
     if (info.my_rank == 0) {
         for (int irun = 0; irun < nruns; irun++) {
             MPI_Status status;
-            MPI_Recv(&results.run_results[irun], 1, DT_RUNRESULTS, MPI_ANY_SOURCE, irun, MPI_COMM_WORLD, &status);
+            MPI_Recv(&results.run_results[irun], 1, DT_RUNRESULTS, MPI_ANY_SOURCE, irun, MPI_COMM_WORLD, &status
+            );
             results.run_results[irun].decomp_results = calloc(results.run_results[irun].n_cell_sizes, sizeof(DecompResults));
             if (results.run_results[irun].decomp_results == NULL) { abort(); }
             MPI_Recv(
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results, int irun, int nruns, MPI_Request* run_requests, MPI_Request* decomp_requests) {
+void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results, int irun, MPI_Request* run_requests, MPI_Request* decomp_requests) {
     // Find values of iP and iS for this run
     const int nP = args->number_volume_fraction_increments;
     const double Pinit = args->volume_fraction_initial;
