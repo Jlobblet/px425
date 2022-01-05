@@ -7,7 +7,7 @@ CC=mpicc
 CFLAGS= -O3 -march=native -fopenmp -mavx2 -Wall -Wextra -Wpedantic
 
 # Command to use for linking and executable
-LD=gcc
+LD=ld
 EXE=wifi
 LDFLAGS=-lm
 
@@ -15,7 +15,7 @@ all: wifi
 
 # Default build target
 wifi : wifi.o mt19937ar.o input.o output.o types.o comms.o
-	$(CC) $(CFLAGS) -o $(EXE) wifi.c mt19937ar.o input.o output.o types.o comms.o $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(EXE) wifi.o mt19937ar.o input.o output.o types.o comms.o $(LDFLAGS)
 
 # Purge build files and executable
 clean :
