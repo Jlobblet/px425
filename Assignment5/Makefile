@@ -14,11 +14,14 @@ LDFLAGS=-lm
 all: wifi
 
 # Default build target
-wifi :
-	$(CC) $(CFLAGS) -o $(EXE) wifi.c mt19937ar.c input.c output.c types.c comms.c $(LDFLAGS)
+wifi : wifi.o mt19937ar.o input.o output.o types.o comms.o
+	$(CC) $(CFLAGS) -o $(EXE) wifi.c mt19937ar.o input.o output.o types.o comms.o $(LDFLAGS)
 
 # Purge build files and executable
 clean :
 	rm -rf *.o *.mod ./$(EXE)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.c:
