@@ -12,7 +12,7 @@
 cd $SLURM_SUBMIT_DIR 
 
 # Load the modules used when compiling my code
-module load GCC
+module load GCC/9.3.0 libpng/1.6.37 OpenMPI/4.0.3
 
 # Note we use srun rather than mpirun here
 srun ./wifi -L 50 -P 0.30 -D 0 -N 5
