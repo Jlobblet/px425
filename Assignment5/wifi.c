@@ -5,6 +5,7 @@
 // Starter code for optimisation and parallelisation
 // N. Hine, November 2021
 // phuwcs, December 2021
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +48,7 @@ int main(int argc, char** argv) {
 
     bool seedtime = args.use_current_time_as_seed;
 
-    const int cellmin = 20, cellmax = 20;
+    const int cellmin = (int)floor(args.space_station_initial_size) / 2, cellmax = cellmin;
 
     // Seed random number generator
     unsigned long seed = 20350292;
@@ -131,6 +132,7 @@ void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results,
     // Find values of P and S for this run
     const double P = Pinit + iP * deltaP;
     const double S = Sinit + iS * deltaS;
+    cellmax = cellmin = (int)floor(S) / 2;
     // Output sizes and volume fraction
     run_results->S = S;
     run_results->P = P;
@@ -225,7 +227,6 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
             int ix = ic % dom->nx;
             int iy = ((ic - ix) / dom->nx) % dom->ny;
             int iz = (ic - ix - dom->ny * iy) / (dom->nx * dom->ny);
-#pragma omp parallel for default(none) shared(dxs, dys, dzs, ix, iy, iz, dom) private(ic) reduction(||: changed)
             for (int neighb = 14; neighb < 27; neighb++) {
                 // modulo arithmetic to find dx, dy, dz
                 int dx = dxs[neighb];
