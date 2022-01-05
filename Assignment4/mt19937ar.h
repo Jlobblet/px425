@@ -1,5 +1,5 @@
-#ifndef __MT19937AR_INCLUDED__
-#define __MT19937AR_INCLUDED__
+#ifndef MT19937AR_INCLUDED
+#define MT19937AR_INCLUDED
 
 /* initializes mt[N] with a seed */
 void init_genrand(unsigned long s);

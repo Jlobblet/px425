@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,33 +47,6 @@ Args comms_read_input(int argc, char** argv, MpiInfo* info) {
 
     return args;
 }
-
-// no longer using a cartesian communicator; instead each process handles its own run
-//void comms_cell_map(CellDomain* dom, MpiInfo* info) {
-//    int ndims = 3;
-//    int reorder = 0;
-//    // no periodic boundary conditions
-//    int pbc[3] = {0, 0, 0};
-//
-//    int proot = (int) ceil(cbrt((double) info->n_processors));
-//    int dims[3] = {proot, proot, proot};
-//
-//    MPI_Cart_create(MPI_COMM_WORLD, ndims, dims, pbc, reorder, &info->cart_comm);
-//    for (int i = -1; i <= 1; i++) {
-//        for (int j = -1; j <= 1; j++) {
-//            for (int k = -1; k <= 1; k++) {
-//                int rank = info->my_rank;
-//                MPI_Cart_shift(info->cart_comm, 0, i, &rank, &rank);
-//                MPI_Cart_shift(info->cart_comm, 1, j, &rank, &rank);
-//                MPI_Cart_shift(info->cart_comm, 2, k, &rank, &rank);
-//                info->neighbours[i][j][k] = rank;
-//            }
-//        }
-//    }
-//
-//    info->n_routers = dom->cell_n_routers[info->my_rank];
-//    info->routers = dom->cell_routers[info->my_rank];
-//}
 
 void comms_finalise() {
     MPI_Type_free(&DT_RUNRESULTS);

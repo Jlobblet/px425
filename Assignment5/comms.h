@@ -16,8 +16,6 @@ void comms_initialise(int* argc, char*** argv, MpiInfo* info);
 
 Args comms_read_input(int argc, char** argv, MpiInfo* info);
 
-void comms_cell_map();
-
 void comms_finalise();
 
 #endif //PX425_COMMS_H

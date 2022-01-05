@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 
     bool seedtime = args.use_current_time_as_seed;
 
-    const int cellmin = 1, cellmax = 20;
+    const int cellmin = 20, cellmax = 20;
 
     // Seed random number generator
     unsigned long seed = 20350292;
@@ -188,6 +188,7 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
     // loop over all cells of the domain decomposition, then loop over the routers
     // in each cell. If cluster has not yet been identified, find all the
     // connected routers within this cell's list of routers (fast!)
+    // slower when parallelised
     for (int ic = 0; ic < dom->nc; ic++) {
         for (int i = 0; i < dom->cell_n_routers[ic]; i++) {
             if (dom->cell_routers[ic][i]->cluster == 0) {
@@ -204,6 +205,7 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
     // cell and move outwards, checking the "outward" half of the set of nearest
     // neighbour cells. Always retain lower numbered cluster to prevent circular
     // "flows" of cluster value
+
     bool changed = true;
     int dxs[27], dys[27], dzs[27];
     for (int i = 14; i < 27; i++) {
@@ -215,6 +217,7 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
     // keep repeating loop until nothing changes any more
     while (changed) {
         changed = false;
+        // this loop is slower when parallelised
         for (int ic = 0; ic < dom->nx * dom->ny * dom->nz; ic++) {
             // loop over 13 of the 26 "nearest neighbour" cells on the cubic
             // lattice, ie the outward half - otherwise double counting will
@@ -308,7 +311,7 @@ bool merge_clusters(int nra, Router** ra, int nrb, Router** rb) {
 int count_clusters(CellDomain* dom) {
     // The max number of clusters is the number of routers (each router in its own cluster)
     bool* counted = calloc(dom->n_routers, sizeof(bool));
-    // This is a relaxed loop since it's just setting things to true
+    // This is a relaxed loop since it's just setting things to true, so the data races don't really matter
 #pragma omp parallel for default(none) shared(dom, counted)
     for (int ic = 0; ic < dom->nc; ic++) {
         for (int i = 0; i < dom->cell_n_routers[ic]; i++) {

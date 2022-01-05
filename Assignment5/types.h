@@ -33,7 +33,6 @@ typedef struct CellDomain {
     bool spanning_cluster;
 } CellDomain;
 
-///
 typedef struct MpiInfo {
     int n_processors;
     int my_rank;
