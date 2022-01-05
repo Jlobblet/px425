@@ -9,7 +9,7 @@
 # NOTE: For MPI, we change ntasks-per-node and keep  cpus-per-task at 1
 
 # Change into the directory where I submitted the job
-cd $SLURM_SUBMIT_DIR 
+cd "$SLURM_SUBMIT_DIR" || exit 1
 
 # Load the modules used when compiling my code
 module load GCC/9.3.0 libpng/1.6.37 OpenMPI/4.0.3
