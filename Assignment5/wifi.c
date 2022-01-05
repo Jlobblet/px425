@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
         decomp_requests[i] = MPI_REQUEST_NULL;
     }
 
+    // Allocate runs in a round-robin strategy
     for (int irun = info.my_rank; irun < nruns; irun += info.n_processors) {
         do_run(&args, cellmin, cellmax, &results.run_results[irun], irun, run_requests, decomp_requests);
     }
@@ -84,7 +85,7 @@ int main(int argc, char** argv) {
     if (info.my_rank == 0) {
         for (int irun = 0; irun < nruns; irun++) {
             MPI_Status status;
-            MPI_Recv(&results.run_results[irun], 1, DT_RUNRESULTS, MPI_ANY_SOURCE, irun, MPI_COMM_WORLD, &status
+            MPI_Recv(&results.run_results[irun], 1, DT_RUNRESULTS, irun % info.n_processors, irun, MPI_COMM_WORLD, &status
             );
             results.run_results[irun].decomp_results = calloc(results.run_results[irun].n_cell_sizes, sizeof(DecompResults));
             if (results.run_results[irun].decomp_results == NULL) { abort(); }
@@ -92,7 +93,7 @@ int main(int argc, char** argv) {
                 results.run_results[irun].decomp_results,
                 results.run_results[irun].n_cell_sizes,
                 DT_DECOMPRESULTS,
-                MPI_ANY_SOURCE,
+                irun % info.n_processors,
                 irun,
                 MPI_COMM_WORLD,
                 &status
@@ -170,6 +171,7 @@ void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results,
         // Save results
         decomp_results->n_clusters = dom_local.n_clusters;
         decomp_results->spanning_cluster = dom_local.spanning_cluster;
+
         // Remove storage associated with domain decomposition and reset Router cluster values
         destroy_domain_decomp(&dom_local);
         free(Rtr_local);
