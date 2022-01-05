@@ -225,6 +225,7 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results) {
             int ix = ic % dom->nx;
             int iy = ((ic - ix) / dom->nx) % dom->ny;
             int iz = (ic - ix - dom->ny * iy) / (dom->nx * dom->ny);
+#pragma omp parallel for default(none) shared(dxs, dys, dzs, ix, iy, iz, ic, dom) reduction(||: changed)
             for (int neighb = 14; neighb < 27; neighb++) {
                 // modulo arithmetic to find dx, dy, dz
                 int dx = dxs[neighb];
