@@ -18,7 +18,7 @@ void create_RunResults(RunResults* run_results) {
 }
 
 void destroy_RunResults(RunResults* run_results) {
-    if (run_results->decomp_results) {
+    if (run_results->decomp_results != NULL) {
         free(run_results->decomp_results);
     }
 }
@@ -32,7 +32,7 @@ void create_Results(Results* results) {
 }
 
 void destroy_Results(Results* results) {
-    if (results->run_results) {
+    if (results->run_results != NULL) {
         for (int i = 0; i < results->n_runs; i++) {
             destroy_RunResults(&results->run_results[i]);
         }
