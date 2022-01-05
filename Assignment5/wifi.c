@@ -34,7 +34,6 @@ void find_all_clusters(CellDomain* dom, DecompResults* decomp_results);
 
 void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results, int irun, MPI_Request* run_requests, MPI_Request* decomp_requests);
 
-// Main Routine
 int main(int argc, char** argv) {
     MpiInfo info;
     comms_initialise(&argc, &argv, &info);
@@ -105,6 +104,7 @@ int main(int argc, char** argv) {
 
     }
 
+    // Ensure everything has been sent before quitting this rank
     MPI_Waitall(nruns, run_requests, statuses);
     MPI_Waitall(nruns, decomp_requests, statuses);
 
@@ -117,6 +117,7 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
+/// Perform an individual run.
 void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results, int irun, MPI_Request* run_requests, MPI_Request* decomp_requests) {
     // Find values of iP and iS for this run
     const int nP = args->number_volume_fraction_increments;
