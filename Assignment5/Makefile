@@ -3,8 +3,8 @@
 ########################################
 
 # C compiler and flags
-CC=mpicc
-CFLAGS= -O3 -march=native -fopenmp -mavx2 -Wall -Wextra -Wpedantic
+CC=mpiicc
+CFLAGS= -O3 -march=native -fopenmp -march=core-avx2 -Wall -Wextra -Wpedantic
 
 # Command to use for linking and executable
 LD=ld
