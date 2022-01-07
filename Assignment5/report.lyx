@@ -142,6 +142,10 @@ LatexCommand tableofcontents
 
 \end_layout
 
+\begin_layout Section*
+Foreword
+\end_layout
+
 \begin_layout Standard
 Compilation instructions:
 \end_layout
