@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=4571mb
@@ -13,9 +13,9 @@ cd "$SLURM_SUBMIT_DIR" || exit 1
 
 # Load the modules used when compiling my code
 module purge
-module load GCC/9.3.0 libpng/1.6.37 OpenMPI/4.0.3
+module load intel/2017.2.174-GCC-5.3.0-2.27 impi/2017.2.174
 
 # Note we use srun rather than mpirun here
-srun -genv I_MPI_FABRICS=dapl,ofa,tcp,tmi,ofi ./wifi -L 50 -P 0.30 -D 0 -N 5
+srun ./wifi -S 150 -N 1 -P 0.345838 -M 3 -Q 0.000001
 
 exit 0
