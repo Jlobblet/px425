@@ -153,7 +153,6 @@ void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results,
     const double R = args->router_radius;
     generate_routers(&Nrtr, &Rtr, S, R, P);
     // Loop over domain decomposition grid sizes
-    omp_set_max_active_levels(omp_get_max_active_levels() + 1);
 #pragma omp parallel for default(none) shared(cellmin, cellmax, Nrtr, Rtr, run_results, dom)
     for (int i = cellmin; i <= cellmax; i++) {
         // Create local copies of data to not interfere with other threads
@@ -179,7 +178,6 @@ void do_run(const Args* args, int cellmin, int cellmax, RunResults* run_results,
         destroy_domain_decomp(&dom_local);
         free(Rtr_local);
     }
-    omp_set_max_active_levels(omp_get_max_active_levels() - 1);
     MPI_Isend(run_results, 1, DT_RUNRESULTS, 0, irun, MPI_COMM_WORLD, &run_requests[irun]);
     MPI_Isend(run_results->decomp_results, run_results->n_cell_sizes, DT_DECOMPRESULTS, 0, irun, MPI_COMM_WORLD, &decomp_requests[irun]);
     free(Rtr);
